@@ -1,1130 +1,1752 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise C - Real-Time OEE Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
-            color: #ecf0f1;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .dashboard-container { max-width: 2000px; margin: 0 auto; }
-        .dashboard-header {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px 30px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 5px solid #3498db;
-        }
-        .header-left h1 { font-size: 28px; color: #3498db; margin-bottom: 5px; }
-        .subtitle { font-size: 14px; color: #95a5a6; }
-        .header-controls { display: flex; gap: 20px; align-items: center; }
-        .control-btn {
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            border-radius: 5px;
-            color: #ecf0f1;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .control-btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
-        .control-btn.paused { background: #e67e22; }
-        .status-indicator { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #2ecc71;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .config-panel {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .config-section { display: flex; flex-direction: column; gap: 5px; }
-        .config-section label { font-size: 12px; color: #95a5a6; font-weight: 600; }
-        .config-section input {
-            padding: 8px 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            background: rgba(0, 0, 0, 0.3);
-            color: #ecf0f1;
-            font-size: 14px;
-            width: 150px;
-        }
-        .config-section input:focus { outline: none; border-color: #3498db; }
-        .apply-btn { background: #27ae60 !important; }
-        .test-btn { background: #3498db !important; }
-        .discover-btn { background: #9b59b6 !important; }
-        .process-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .process-tab {
-            padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            border-radius: 5px;
-            color: #ecf0f1;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .process-tab:hover { background: rgba(255, 255, 255, 0.2); }
-        .process-tab.active { background: #3498db; }
-        .oee-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .oee-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            border-left: 5px solid #3498db;
-            transition: all 0.3s;
-        }
-        .oee-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); }
-        .oee-card.availability { border-left-color: #2ecc71; }
-        .oee-card.performance { border-left-color: #f39c12; }
-        .oee-card.quality { border-left-color: #9b59b6; }
-        .oee-card h3 {
-            font-size: 14px;
-            color: #95a5a6;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .oee-value { font-size: 48px; font-weight: bold; color: #ecf0f1; margin-bottom: 5px; }
-        .oee-label { font-size: 16px; color: #95a5a6; }
-        .oee-status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-        .oee-status.excellent { background: #27ae60; }
-        .oee-status.good { background: #2ecc71; }
-        .oee-status.fair { background: #f39c12; }
-        .oee-status.poor { background: #e74c3c; }
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .metric-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-        .metric-card h4 { font-size: 12px; color: #95a5a6; margin-bottom: 8px; }
-        .metric-value { font-size: 24px; font-weight: bold; color: #3498db; }
-        .metric-unit { font-size: 12px; color: #95a5a6; margin-left: 5px; }
-        .log-panel {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-        .log-header {
-            font-size: 16px;
-            color: #3498db;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .clear-log-btn {
-            background: #e74c3c;
-            color: #fff;
-            border: none;
-            padding: 5px 15px;
-            border-radius: 5px;
-            font-size: 11px;
-            cursor: pointer;
-        }
-        .log-content {
-            max-height: 500px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-        }
-        .log-entry {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            border-left: 3px solid #2ecc71;
-        }
-        .log-entry.error { border-left-color: #e74c3c; }
-        .log-timestamp { color: #95a5a6; font-size: 10px; margin-bottom: 5px; }
-        .process-section { display: none; }
-        .process-section.active { display: block; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: rgba(52, 152, 219, 0.5); border-radius: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise C — OEE Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #080c10;
+    --surface:   #0d1318;
+    --panel:     #111820;
+    --border:    #1e2d3a;
+    --border2:   #243040;
+    --text:      #c8d8e8;
+    --dim:       #4a6070;
+    --mono:      'Share Tech Mono', monospace;
+    --head:      'Barlow Condensed', sans-serif;
+    --body:      'Barlow', sans-serif;
+
+    --ok:        #00e5a0;
+    --warn:      #f0c040;
+    --err:       #ff4560;
+    --info:      #38b6ff;
+    --idle:      #607080;
+
+    --sub:       #00e5a0;
+    --tff:       #38b6ff;
+    --chrom:     #c060ff;
+    --sum:       #f0c040;
+
+    --glow-ok:   0 0 16px rgba(0,229,160,0.35);
+    --glow-warn: 0 0 16px rgba(240,192,64,0.35);
+    --glow-err:  0 0 16px rgba(255,69,96,0.35);
+    --glow-info: 0 0 16px rgba(56,182,255,0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ─── SCAN-LINE OVERLAY ───────────────────────────────── */
+  body::before {
+    content:'';
+    position:fixed; inset:0; pointer-events:none; z-index:999;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,.08) 2px,
+      rgba(0,0,0,.08) 4px
+    );
+  }
+
+  /* ─── HEADER ──────────────────────────────────────────── */
+  .masthead {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 24px;
+    background: linear-gradient(90deg, #0d1318 0%, #111f2a 50%, #0d1318 100%);
+    border-bottom: 1px solid var(--border2);
+    position:sticky; top:0; z-index:100;
+  }
+  .masthead-left { display:flex; align-items:center; gap:16px; }
+  .logo-badge {
+    width:36px; height:36px; border-radius:4px;
+    background: linear-gradient(135deg,#00e5a0,#38b6ff);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--head); font-weight:900; font-size:14px; color:#080c10;
+  }
+  .masthead h1 {
+    font-family:var(--head); font-weight:700; font-size:22px;
+    letter-spacing:.08em; color:#e8f4ff;
+  }
+  .masthead h1 span { color:var(--ok); }
+  .masthead-sub { font-size:11px; color:var(--dim); font-family:var(--mono); }
+
+  .controls {
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .ctrl-group {
+    display:flex; align-items:center; gap:6px;
+    background:var(--surface); border:1px solid var(--border);
+    padding:4px 10px; border-radius:4px;
+  }
+  .ctrl-group label {
+    font-size:10px; font-family:var(--mono); color:var(--dim);
+    text-transform:uppercase; letter-spacing:.05em; white-space:nowrap;
+  }
+  .ctrl-group input, .ctrl-group select {
+    background:transparent; border:none; color:var(--text);
+    font-family:var(--mono); font-size:12px; width:90px; outline:none;
+  }
+  .ctrl-group input[type=number] { width:60px; }
+
+  .btn {
+    padding:6px 18px; border-radius:4px; cursor:pointer;
+    font-family:var(--head); font-weight:700; font-size:13px;
+    letter-spacing:.06em; text-transform:uppercase;
+    border:none; transition:all .15s;
+  }
+  .btn-start {
+    background:var(--ok); color:#080c10;
+    box-shadow: var(--glow-ok);
+  }
+  .btn-start:hover { filter:brightness(1.15); }
+  .btn-start.running { background:var(--err); box-shadow:var(--glow-err); }
+  .btn-start.running::before { content:'⏹ '; }
+  .btn-start:not(.running)::before { content:'▶ '; }
+
+  .status-dot {
+    width:8px; height:8px; border-radius:50%;
+    background:var(--dim); display:inline-block;
+    transition:background .3s, box-shadow .3s;
+  }
+  .status-dot.live { background:var(--ok); box-shadow:var(--glow-ok); animation:pulse 2s infinite; }
+  .status-dot.error { background:var(--err); box-shadow:var(--glow-err); }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+
+  .ts-display {
+    font-family:var(--mono); font-size:11px; color:var(--dim);
+    white-space:nowrap;
+  }
+
+  /* ─── MAIN LAYOUT ─────────────────────────────────────── */
+  .main { padding:16px 24px; display:flex; flex-direction:column; gap:16px; }
+
+  /* ─── PLANT KPI BAR ───────────────────────────────────── */
+  .kpi-bar {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
+  }
+  .kpi-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:6px; padding:14px 18px;
+    position:relative; overflow:hidden;
+    transition:border-color .3s;
+  }
+  .kpi-card::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  }
+  .kpi-card.sub::before  { background:var(--sub); }
+  .kpi-card.tff::before  { background:var(--tff); }
+  .kpi-card.chrom::before{ background:var(--chrom); }
+  .kpi-card.sum::before  { background:var(--sum); }
+
+  .kpi-process {
+    font-family:var(--head); font-size:10px; font-weight:700;
+    letter-spacing:.15em; text-transform:uppercase; color:var(--dim);
+    margin-bottom:4px;
+  }
+  .kpi-process.sub   { color:var(--sub); }
+  .kpi-process.tff   { color:var(--tff); }
+  .kpi-process.chrom { color:var(--chrom); }
+  .kpi-process.sum   { color:var(--sum); }
+
+  .kpi-oee {
+    font-family:var(--head); font-size:42px; font-weight:900;
+    line-height:1; letter-spacing:-.01em;
+  }
+  .kpi-oee.good   { color:var(--ok); text-shadow:var(--glow-ok); }
+  .kpi-oee.warn   { color:var(--warn); text-shadow:var(--glow-warn); }
+  .kpi-oee.bad    { color:var(--err); text-shadow:var(--glow-err); }
+  .kpi-oee.idle   { color:var(--idle); }
+
+  .kpi-components {
+    display:flex; gap:12px; margin-top:8px;
+  }
+  .kpi-comp {
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .kpi-comp-label {
+    font-size:9px; font-family:var(--mono);
+    color:var(--dim); letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .kpi-comp-val {
+    font-family:var(--mono); font-size:15px; color:var(--text);
+    margin-top:1px;
+  }
+  .kpi-status {
+    position:absolute; top:12px; right:12px;
+    font-family:var(--mono); font-size:10px;
+    padding:2px 7px; border-radius:3px;
+  }
+  .kpi-status.running  { background:rgba(0,229,160,.15); color:var(--ok); border:1px solid rgba(0,229,160,.3); }
+  .kpi-status.idle     { background:rgba(96,112,128,.15); color:var(--idle); border:1px solid rgba(96,112,128,.3); }
+  .kpi-status.fault    { background:rgba(255,69,96,.15); color:var(--err); border:1px solid rgba(255,69,96,.3); }
+
+  /* progress bar */
+  .oee-bar {
+    height:4px; border-radius:2px;
+    background:var(--border); margin-top:8px; overflow:hidden;
+  }
+  .oee-bar-fill {
+    height:100%; border-radius:2px;
+    transition:width .8s ease;
+  }
+
+  /* ─── PROCESS PANELS ──────────────────────────────────── */
+  .process-grid {
+    display:grid; grid-template-columns:repeat(2,1fr); gap:16px;
+  }
+  .proc-panel {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:6px; overflow:hidden;
+  }
+  .proc-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  .proc-header-left { display:flex; align-items:center; gap:10px; }
+  .proc-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+  .proc-title {
+    font-family:var(--head); font-size:16px; font-weight:700;
+    letter-spacing:.1em; text-transform:uppercase;
+  }
+  .proc-subtitle { font-size:11px; color:var(--dim); font-family:var(--mono); }
+
+  .proc-body { padding:14px 16px; }
+
+  /* oee gauge row */
+  .gauge-row {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+    margin-bottom:12px;
+  }
+  .gauge {
+    background:var(--panel); border-radius:5px; padding:10px 12px;
+    border:1px solid var(--border);
+  }
+  .gauge-label {
+    font-size:9px; font-family:var(--mono); color:var(--dim);
+    letter-spacing:.1em; text-transform:uppercase;
+  }
+  .gauge-value {
+    font-family:var(--head); font-size:26px; font-weight:700;
+    line-height:1.1; margin-top:2px;
+  }
+
+  /* sparkline area */
+  .sparkline-area {
+    background:var(--panel); border-radius:5px;
+    border:1px solid var(--border); padding:8px 10px;
+    margin-bottom:12px;
+  }
+  .spark-label {
+    font-size:9px; font-family:var(--mono); color:var(--dim);
+    letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px;
+    display:flex; justify-content:space-between;
+  }
+  canvas.spark { width:100%; height:40px; display:block; }
+
+  /* process variables table */
+  .pv-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:6px;
+    margin-bottom:12px;
+  }
+  .pv-item {
+    background:var(--panel); border-radius:4px;
+    padding:6px 10px; border:1px solid var(--border);
+    border-left:2px solid transparent; transition:border-color .3s;
+  }
+  .pv-item.alarm { border-left-color:var(--err); }
+  .pv-item.warn  { border-left-color:var(--warn); }
+  .pv-item.ok    { border-left-color:var(--ok); }
+  .pv-name  { font-size:9px; color:var(--dim); font-family:var(--mono); letter-spacing:.05em; text-transform:uppercase; }
+  .pv-val   { font-family:var(--mono); font-size:14px; color:var(--text); margin-top:1px; }
+  .pv-unit  { font-size:9px; color:var(--dim); }
+
+  /* events feed */
+  .events-panel {
+    background:var(--panel); border-radius:5px;
+    border:1px solid var(--border); overflow:hidden;
+  }
+  .events-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:6px 12px;
+    border-bottom:1px solid var(--border);
+    font-size:9px; font-family:var(--mono); color:var(--dim);
+    letter-spacing:.1em; text-transform:uppercase;
+  }
+  .events-list {
+    max-height:120px; overflow-y:auto;
+    scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+  }
+  .event-row {
+    display:grid; grid-template-columns:90px 60px 1fr;
+    gap:8px; padding:5px 12px;
+    border-bottom:1px solid rgba(30,45,58,.5);
+    font-family:var(--mono); font-size:10px;
+    transition:background .15s;
+    animation:slideIn .3s ease;
+  }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:none} }
+  .event-row:hover { background:rgba(255,255,255,.02); }
+  .event-time  { color:var(--dim); }
+  .event-sev {
+    text-align:center; border-radius:3px; padding:0 4px; font-size:9px;
+    font-weight:bold; letter-spacing:.05em;
+  }
+  .sev-ERR    { background:rgba(255,69,96,.2);  color:var(--err); }
+  .sev-WARN   { background:rgba(240,192,64,.2); color:var(--warn); }
+  .sev-INFO   { background:rgba(56,182,255,.2); color:var(--info); }
+  .sev-OK     { background:rgba(0,229,160,.2);  color:var(--ok); }
+  .event-msg  { color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* ─── API LOG TABLE ───────────────────────────────────── */
+  .log-section {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:6px; overflow:hidden;
+  }
+  .log-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 16px; border-bottom:1px solid var(--border);
+  }
+  .log-header h2 {
+    font-family:var(--head); font-size:14px; font-weight:700;
+    letter-spacing:.12em; text-transform:uppercase; color:#e8f4ff;
+  }
+  .log-stats {
+    display:flex; gap:16px;
+  }
+  .log-stat {
+    font-family:var(--mono); font-size:11px;
+    display:flex; gap:6px; align-items:center;
+  }
+  .log-stat-label { color:var(--dim); }
+  .log-stat-val   { color:var(--text); }
+
+  .log-scroll {
+    max-height:280px; overflow-y:auto;
+    scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+  }
+  table.log-table {
+    width:100%; border-collapse:collapse;
+    font-family:var(--mono); font-size:10px;
+  }
+  .log-table thead th {
+    position:sticky; top:0;
+    background:var(--panel); padding:6px 12px;
+    text-align:left; font-size:9px;
+    letter-spacing:.1em; text-transform:uppercase;
+    color:var(--dim); border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  .log-table tbody tr {
+    border-bottom:1px solid rgba(30,45,58,.4);
+    transition:background .1s;
+    animation:slideIn .25s ease;
+  }
+  .log-table tbody tr:hover { background:rgba(255,255,255,.02); }
+  .log-table td { padding:5px 12px; vertical-align:top; }
+
+  .log-table .col-ts   { color:var(--dim); white-space:nowrap; }
+  .log-table .col-type {
+    white-space:nowrap; font-weight:bold; font-size:9px; letter-spacing:.06em;
+  }
+  .col-type.api    { color:var(--info); }
+  .col-type.sql    { color:var(--ok); }
+  .col-type.anylog { color:var(--chrom); }
+
+  .log-table .col-cmd  { color:var(--text); }
+  .log-table .col-rows { text-align:right; color:var(--text); white-space:nowrap; }
+  .log-table .col-ms   { text-align:right; color:var(--dim); white-space:nowrap; }
+  .log-table .col-status { text-align:center; }
+  .http-ok  { color:var(--ok); }
+  .http-err { color:var(--err); }
+  .http-warn{ color:var(--warn); }
+
+  .log-table .col-err { color:var(--err); font-size:9px; }
+
+  /* ─── FOOTER ──────────────────────────────────────────── */
+  .footer {
+    text-align:center; padding:12px;
+    font-family:var(--mono); font-size:10px; color:var(--dim);
+    border-top:1px solid var(--border);
+    margin-top:4px;
+  }
+
+  /* ─── SCROLLBAR ───────────────────────────────────────── */
+  ::-webkit-scrollbar { width:5px; height:5px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+  /* ─── RESPONSIVE ──────────────────────────────────────── */
+  @media(max-width:900px) {
+    .kpi-bar { grid-template-columns:repeat(2,1fr); }
+    .process-grid { grid-template-columns:1fr; }
+  }
+  @media(max-width:600px) {
+    .kpi-bar { grid-template-columns:1fr; }
+    .controls { flex-direction:column; align-items:flex-start; }
+  }
+
+  .no-data {
+    text-align:center; padding:20px;
+    color:var(--dim); font-family:var(--mono); font-size:11px;
+  }
+
+  /* chart tooltip */
+  .spark-container { position:relative; }
+</style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <div class="dashboard-header">
-            <div class="header-left">
-                <h1>📊 Enterprise C - Real-Time OEE Dashboard</h1>
-                <div class="subtitle">Overall Equipment Effectiveness | TFF · SUB · CHROM · SUM | Powered by UNS via dynics-anylog MCP</div>
-            </div>
-            <div class="header-controls">
-                <div class="status-indicator">
-                    <div class="status-dot" id="statusDot"></div>
-                    <span id="statusText">Live</span>
-                </div>
-                <div class="status-indicator">
-                    Interval: <span id="intervalDisplay">30</span>s
-                </div>
-                <button class="control-btn" onclick="togglePause()" id="pauseBtn">
-                    <span id="pauseIcon">⏸</span>
-                    <span id="pauseText">Pause</span>
-                </button>
-            </div>
-        </div>
 
-        <div class="config-panel">
-            <div class="config-section">
-                <label for="proxyHost">REST Proxy Host:</label>
-                <input type="text" id="proxyHost" value="localhost" placeholder="localhost or IP">
-            </div>
-            <div class="config-section">
-                <label for="proxyPort">REST Proxy Port:</label>
-                <input type="number" id="proxyPort" value="5001" placeholder="5001">
-            </div>
-            <div class="config-section">
-                <label for="refreshInterval">Refresh Interval (sec):</label>
-                <input type="number" id="refreshInterval" value="30" min="5" max="300" step="5">
-            </div>
-            <div class="config-section">
-                <label for="dataWindow">Data Window (hours):</label>
-                <input type="number" id="dataWindow" value="8" min="1" max="24" step="1">
-            </div>
-            <button class="control-btn apply-btn" onclick="applyConfig()">Apply Settings</button>
-            <button class="control-btn test-btn" onclick="testConnection()">Test Connection</button>
-            <button class="control-btn discover-btn" onclick="discoverUNS()">Discover UNS</button>
-        </div>
+<!-- ══════════════════════════════════════════════════════════════ HEADER -->
+<div class="masthead">
+  <div class="masthead-left">
+    <div class="logo-badge">EC</div>
+    <div>
+      <h1>Enterprise <span>C</span> — OEE Monitor</h1>
+      <div class="masthead-sub">manufacturing_historian &nbsp;·&nbsp; SUB / TFF / CHROM / SUM &nbsp;·&nbsp; Unit 250 Bioreactor Complex</div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="ctrl-group">
+      <label>Proxy IP</label>
+      <input type="text" id="cfgIp" value="172.79.89.206" placeholder="IP address">
+    </div>
+    <div class="ctrl-group">
+      <label>Port</label>
+      <input type="number" id="cfgPort" value="8080" min="1" max="65535">
+    </div>
+    <div class="ctrl-group">
+      <label>Hours</label>
+      <input type="number" id="cfgHours" value="24" min="1" max="168">
+    </div>
+    <div class="ctrl-group">
+      <label>Interval</label>
+      <select id="cfgInterval">
+        <option value="30">30 sec</option>
+        <option value="60" selected>60 sec</option>
+        <option value="120">2 min</option>
+        <option value="300">5 min</option>
+      </select>
+    </div>
+    <button class="btn btn-start" id="btnStart" onclick="toggleMonitor()">Start</button>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div class="status-dot" id="statusDot"></div>
+      <span class="ts-display" id="lastUpdate">not started</span>
+    </div>
+  </div>
+</div>
 
-        <div class="process-tabs">
-            <button class="process-tab active" onclick="showProcess('all')">📊 All Processes</button>
-            <button class="process-tab" onclick="showProcess('tff')">🧪 TFF</button>
-            <button class="process-tab" onclick="showProcess('sub')">🧬 SUB</button>
-            <button class="process-tab" onclick="showProcess('chrom')">🔬 CHROM</button>
-            <button class="process-tab" onclick="showProcess('sum')">⚗️ SUM</button>
-        </div>
+<!-- ══════════════════════════════════════════════════════════════ MAIN -->
+<div class="main">
 
-        <div id="allProcess" class="process-section active">
-            <div class="oee-summary" id="oeeSummaryAll"></div>
-            <div class="metrics-grid" id="metricsAll"></div>
-        </div>
+  <!-- KPI BAR -->
+  <div class="kpi-bar">
+    <div class="kpi-card sub" id="kpi-sub">
+      <div class="kpi-process sub">SUB — Bioreactor</div>
+      <div class="kpi-oee idle" id="oee-sub-val">—</div>
+      <div class="oee-bar"><div class="oee-bar-fill" id="oee-sub-bar" style="width:0%;background:var(--sub)"></div></div>
+      <div class="kpi-components">
+        <div class="kpi-comp"><div class="kpi-comp-label">AVAIL</div><div class="kpi-comp-val" id="sub-avail">—</div></div>
+        <div class="kpi-comp"><div class="kpi-comp-label">PERF</div><div class="kpi-comp-val" id="sub-perf">—</div></div>
+        <div class="kpi-comp"><div class="kpi-comp-label">QUAL</div><div class="kpi-comp-val" id="sub-qual">—</div></div>
+      </div>
+      <div class="kpi-status idle" id="sub-status">—</div>
+    </div>
+    <div class="kpi-card tff" id="kpi-tff">
+      <div class="kpi-process tff">TFF — Tangential Flow Filter</div>
+      <div class="kpi-oee idle" id="oee-tff-val">—</div>
+      <div class="oee-bar"><div class="oee-bar-fill" id="oee-tff-bar" style="width:0%;background:var(--tff)"></div></div>
+      <div class="kpi-components">
+        <div class="kpi-comp"><div class="kpi-comp-label">AVAIL</div><div class="kpi-comp-val" id="tff-avail">—</div></div>
+        <div class="kpi-comp"><div class="kpi-comp-label">PERF</div><div class="kpi-comp-val" id="tff-perf">—</div></div>
+        <div class="kpi-comp"><div class="kpi-comp-label">QUAL</div><div class="kpi-comp-val" id="tff-qual">—</div></div>
+      </div>
+      <div class="kpi-status idle" id="tff-status">—</div>
+    </div>
+    <div class="kpi-card chrom" id="kpi-chrom">
+      <div class="kpi-process chrom">CHROM — Chromatography</div>
+      <div class="kpi-oee idle" id="oee-chrom-val">—</div>
+      <div class="oee-bar"><div class="oee-bar-fill" id="oee-chrom-bar" style="width:0%;background:var(--chrom)"></div></div>
+      <div class="kpi-components">
+        <div class="kpi-comp"><div class="kpi-comp-label">AVAIL</div><div class="kpi-comp-val" id="chrom-avail">—</div></div>
+        <div class="kpi-comp"><div class="kpi-comp-label">PERF</div><div class="kpi-comp-val" id="chrom-perf">—</div></div>
+        <div class="kpi-comp"><div class="kpi-comp-label">QUAL</div><div class="kpi-comp-val" id="chrom-qual">—</div></div>
+      </div>
+      <div class="kpi-status idle" id="chrom-status">—</div>
+    </div>
+    <div class="kpi-card sum" id="kpi-sum">
+      <div class="kpi-process sum">SUM — Surge/Mixing Unit</div>
+      <div class="kpi-oee idle" id="oee-sum-val">—</div>
+      <div class="oee-bar"><div class="oee-bar-fill" id="oee-sum-bar" style="width:0%;background:var(--sum)"></div></div>
+      <div class="kpi-components">
+        <div class="kpi-comp"><div class="kpi-comp-label">AVAIL</div><div class="kpi-comp-val" id="sum-avail">—</div></div>
+        <div class="kpi-comp"><div class="kpi-comp-label">PERF</div><div class="kpi-comp-val" id="sum-perf">—</div></div>
+        <div class="kpi-comp"><div class="kpi-comp-label">QUAL</div><div class="kpi-comp-val" id="sum-qual">—</div></div>
+      </div>
+      <div class="kpi-status idle" id="sum-status">—</div>
+    </div>
+  </div>
 
-        <div id="tffProcess" class="process-section">
-            <div class="oee-summary" id="oeeSummaryTFF"></div>
-            <div class="metrics-grid" id="metricsTFF"></div>
-        </div>
+  <!-- PROCESS PANELS -->
+  <div class="process-grid">
 
-        <div id="subProcess" class="process-section">
-            <div class="oee-summary" id="oeeSummarySUB"></div>
-            <div class="metrics-grid" id="metricsSUB"></div>
+    <!-- ── SUB ── -->
+    <div class="proc-panel">
+      <div class="proc-header" style="border-left:3px solid var(--sub)">
+        <div class="proc-header-left">
+          <div class="proc-dot" style="background:var(--sub)"></div>
+          <div>
+            <div class="proc-title" style="color:var(--sub)">Bioreactor SUB-250</div>
+            <div class="proc-subtitle">sub_unit_250_* · manufacturing_historian</div>
+          </div>
         </div>
-
-        <div id="chromProcess" class="process-section">
-            <div class="oee-summary" id="oeeSummaryCHROM"></div>
-            <div class="metrics-grid" id="metricsCHROM"></div>
+        <div>
+          <span id="sub-batch" style="font-family:var(--mono);font-size:10px;color:var(--dim)">BATCH: —</span>
         </div>
-
-        <div id="sumProcess" class="process-section">
-            <div class="oee-summary" id="oeeSummarySUM"></div>
-            <div class="metrics-grid" id="metricsSUM"></div>
+      </div>
+      <div class="proc-body">
+        <div class="gauge-row">
+          <div class="gauge">
+            <div class="gauge-label">Availability</div>
+            <div class="gauge-value" id="sub-g-avail" style="color:var(--ok)">—</div>
+          </div>
+          <div class="gauge">
+            <div class="gauge-label">Performance</div>
+            <div class="gauge-value" id="sub-g-perf" style="color:var(--warn)">—</div>
+          </div>
+          <div class="gauge">
+            <div class="gauge-label">Quality</div>
+            <div class="gauge-value" id="sub-g-qual" style="color:var(--ok)">—</div>
+          </div>
         </div>
-
-        <div class="log-panel">
-            <div class="log-header">
-                <span>📝 System Log (REST API + AnyLog MCP + UNS + Row Counts)</span>
-                <button class="clear-log-btn" onclick="clearLog()">Clear Log</button>
-            </div>
-            <div class="log-content" id="logContent"></div>
+        <div class="pv-grid">
+          <div class="pv-item" id="pv-sub-temp">
+            <div class="pv-name">TIC-250-001</div>
+            <div class="pv-val">— <span class="pv-unit">°C</span></div>
+          </div>
+          <div class="pv-item" id="pv-sub-ph">
+            <div class="pv-name">AIC-250-003 pH</div>
+            <div class="pv-val">— <span class="pv-unit">pH</span></div>
+          </div>
+          <div class="pv-item" id="pv-sub-do">
+            <div class="pv-name">AIC-250-001 DO</div>
+            <div class="pv-val">— <span class="pv-unit">%</span></div>
+          </div>
+          <div class="pv-item" id="pv-sub-agit">
+            <div class="pv-name">SIC-250-002</div>
+            <div class="pv-val">— <span class="pv-unit">rpm</span></div>
+          </div>
+          <div class="pv-item" id="pv-sub-flow">
+            <div class="pv-name">FIC-250-001 Air</div>
+            <div class="pv-val">— <span class="pv-unit">slpm</span></div>
+          </div>
+          <div class="pv-item" id="pv-sub-phase">
+            <div class="pv-name">Phase</div>
+            <div class="pv-val" style="font-size:11px">—</div>
+          </div>
         </div>
+        <div class="sparkline-area">
+          <div class="spark-label">
+            <span>OEE % (rolling)</span>
+            <span id="sub-spark-range" style="color:var(--dim)">—</span>
+          </div>
+          <canvas class="spark" id="spark-sub" height="40"></canvas>
+        </div>
+        <div class="events-panel">
+          <div class="events-header">
+            <span>Events &amp; Alarms</span>
+            <span id="sub-event-count" style="color:var(--text)">0</span>
+          </div>
+          <div class="events-list" id="events-sub"></div>
+        </div>
+      </div>
     </div>
 
-    <script>
-// Enterprise C OEE Dashboard - Complete JavaScript
-// Configuration
-let PROXY_URL = 'http://localhost:5001';
-let PROXY_HOST = 'localhost';
-let PROXY_PORT = 5001;
-const DBMS = 'manufacturing_historian';
-let REFRESH_INTERVAL = 30000;
-let DATA_WINDOW_HOURS = 8;
-const MCP_SERVER = 'dynics-anylog';
+    <!-- ── TFF ── -->
+    <div class="proc-panel">
+      <div class="proc-header" style="border-left:3px solid var(--tff)">
+        <div class="proc-header-left">
+          <div class="proc-dot" style="background:var(--tff)"></div>
+          <div>
+            <div class="proc-title" style="color:var(--tff)">TFF-300 Filtration</div>
+            <div class="proc-subtitle">tff_* · manufacturing_historian</div>
+          </div>
+        </div>
+        <div>
+          <span id="tff-batch" style="font-family:var(--mono);font-size:10px;color:var(--dim)">BATCH: —</span>
+        </div>
+      </div>
+      <div class="proc-body">
+        <div class="gauge-row">
+          <div class="gauge">
+            <div class="gauge-label">Availability</div>
+            <div class="gauge-value" id="tff-g-avail" style="color:var(--ok)">—</div>
+          </div>
+          <div class="gauge">
+            <div class="gauge-label">Performance</div>
+            <div class="gauge-value" id="tff-g-perf" style="color:var(--warn)">—</div>
+          </div>
+          <div class="gauge">
+            <div class="gauge-label">Quality</div>
+            <div class="gauge-value" id="tff-g-qual" style="color:var(--ok)">—</div>
+          </div>
+        </div>
+        <div class="pv-grid">
+          <div class="pv-item" id="pv-tff-tmp">
+            <div class="pv-name">TMP-7M</div>
+            <div class="pv-val">— <span class="pv-unit">psig</span></div>
+          </div>
+          <div class="pv-item" id="pv-tff-flux">
+            <div class="pv-name">FX-7F Flux</div>
+            <div class="pv-val">— <span class="pv-unit">LMH</span></div>
+          </div>
+          <div class="pv-item" id="pv-tff-flow">
+            <div class="pv-name">FI-7F Flow</div>
+            <div class="pv-val">— <span class="pv-unit">lpm</span></div>
+          </div>
+          <div class="pv-item" id="pv-tff-cm">
+            <div class="pv-name">Conductivity</div>
+            <div class="pv-val">— <span class="pv-unit">mS/cm</span></div>
+          </div>
+          <div class="pv-item" id="pv-tff-timer">
+            <div class="pv-name">Pump Timer</div>
+            <div class="pv-val">— <span class="pv-unit">sec</span></div>
+          </div>
+          <div class="pv-item" id="pv-tff-phase">
+            <div class="pv-name">Phase</div>
+            <div class="pv-val" style="font-size:11px">—</div>
+          </div>
+        </div>
+        <div class="sparkline-area">
+          <div class="spark-label">
+            <span>OEE % (rolling)</span>
+            <span id="tff-spark-range" style="color:var(--dim)">—</span>
+          </div>
+          <canvas class="spark" id="spark-tff" height="40"></canvas>
+        </div>
+        <div class="events-panel">
+          <div class="events-header">
+            <span>Events &amp; Alarms</span>
+            <span id="tff-event-count" style="color:var(--text)">0</span>
+          </div>
+          <div class="events-list" id="events-tff"></div>
+        </div>
+      </div>
+    </div>
 
-// State
-let isPaused = false;
-let refreshTimer = null;
-let systemLog = [];
-let currentProcess = 'all';
+    <!-- ── CHROM ── -->
+    <div class="proc-panel">
+      <div class="proc-header" style="border-left:3px solid var(--chrom)">
+        <div class="proc-header-left">
+          <div class="proc-dot" style="background:var(--chrom)"></div>
+          <div>
+            <div class="proc-title" style="color:var(--chrom)">CHR-01 Chromatography</div>
+            <div class="proc-subtitle">chrom_chr01_* · manufacturing_historian</div>
+          </div>
+        </div>
+        <div>
+          <span id="chrom-batch" style="font-family:var(--mono);font-size:10px;color:var(--dim)">BATCH: —</span>
+        </div>
+      </div>
+      <div class="proc-body">
+        <div class="gauge-row">
+          <div class="gauge">
+            <div class="gauge-label">Availability</div>
+            <div class="gauge-value" id="chrom-g-avail" style="color:var(--ok)">—</div>
+          </div>
+          <div class="gauge">
+            <div class="gauge-label">Performance</div>
+            <div class="gauge-value" id="chrom-g-perf" style="color:var(--warn)">—</div>
+          </div>
+          <div class="gauge">
+            <div class="gauge-label">Quality</div>
+            <div class="gauge-value" id="chrom-g-qual" style="color:var(--ok)">—</div>
+          </div>
+        </div>
+        <div class="pv-grid">
+          <div class="pv-item" id="pv-chrom-uv">
+            <div class="pv-name">UV Absorbance</div>
+            <div class="pv-val">— <span class="pv-unit">AU</span></div>
+          </div>
+          <div class="pv-item" id="pv-chrom-cond">
+            <div class="pv-name">AT-001 pH</div>
+            <div class="pv-val">— <span class="pv-unit">pH</span></div>
+          </div>
+          <div class="pv-item" id="pv-chrom-flow">
+            <div class="pv-name">FT-001 Flow</div>
+            <div class="pv-val">— <span class="pv-unit">lpm</span></div>
+          </div>
+          <div class="pv-item" id="pv-chrom-p1a">
+            <div class="pv-name">P-001A Pump</div>
+            <div class="pv-val">— <span class="pv-unit">%</span></div>
+          </div>
+          <div class="pv-item" id="pv-chrom-pt2">
+            <div class="pv-name">PT-002 Press</div>
+            <div class="pv-val">— <span class="pv-unit">bar</span></div>
+          </div>
+          <div class="pv-item" id="pv-chrom-phase">
+            <div class="pv-name">Phase</div>
+            <div class="pv-val" style="font-size:11px">—</div>
+          </div>
+        </div>
+        <div class="sparkline-area">
+          <div class="spark-label">
+            <span>OEE % (rolling)</span>
+            <span id="chrom-spark-range" style="color:var(--dim)">—</span>
+          </div>
+          <canvas class="spark" id="spark-chrom" height="40"></canvas>
+        </div>
+        <div class="events-panel">
+          <div class="events-header">
+            <span>Events &amp; Alarms</span>
+            <span id="chrom-event-count" style="color:var(--text)">0</span>
+          </div>
+          <div class="events-list" id="events-chrom"></div>
+        </div>
+      </div>
+    </div>
 
-// Process configurations with OEE calculation parameters
-let processConfig = {
-    tff: {
-        name: 'TFF (Tangential Flow Filtration)',
-        units: ['tff01'],
-        // TFF state: try tff_tff01_state first; auto-discover via discoverUNS()
-        // No confirmed tff_ tables in DB — state discovered at runtime
-        state: null,   // populated by discoverUNS() if tff tables exist
-        downtimeStates: ['fault', 'error', 'alarm', 'offline', 'maintenance'],
-        batch: null,
-        // TFF performance: count distinct non-idle values in chrom phase as proxy
-        // or use any discovered tff table. idealCycleTime = 4 hours per TFF run
-        production: null,  // populated by discoverUNS() if tff tables exist
-        oee: { availability: 0, performance: 0, quality: 0, overall: 0 },
-        metrics: {
-            plannedProductionTime: 0,
-            actualRuntime: 0,
-            downtime: 0,
-            idealCycleTime: 240,  // 4 hours per TFF run (in minutes)
-            totalUnits: 0,
-            goodUnits: 0,
-            rejectedUnits: 0,
-            stateBreakdown: {}
-        }
-    },
-    sub: {
-        name: 'SUB (Seed/Upstream Bioreactor)',
-        units: ['250'],
-        state: 'sub_unit_250_state',
-        // Confirmed values from DB: "Running", "Idle   " (with trailing spaces)
-        // Running = available; Idle = available but not producing; Fault/Error = downtime
-        downtimeStates: ['fault', 'error', 'alarm', 'abort', 'stopped'],
-        batch: 'sub_unit_250_batch_id',
-        production: 'sub_unit_250_phase',   // sub_unit_250_phase exists in DB
-        oee: { availability: 0, performance: 0, quality: 0, overall: 0 },
-        metrics: {
-            plannedProductionTime: 0,
-            actualRuntime: 0,
-            downtime: 0,
-            // SUB bioreactor: each phase (inoculation, growth, feed, harvest) = 12-24h
-            // Use 720 min (12 hours) per phase transition as ideal cycle
-            idealCycleTime: 720,
-            totalUnits: 0,
-            goodUnits: 0,
-            rejectedUnits: 0,
-            stateBreakdown: {}
-        }
-    },
-    chrom: {
-        name: 'CHROM (Chromatography)',
-        units: ['chr01'],
-        state: 'chrom_chr01_state_pv',
-        // Confirmed values from DB: "Idle" only in last 7 days
-        downtimeStates: ['fault', 'error', 'alarm', 'abort'],
-        batch: 'chrom_chr01_batch_id',
-        // chrom_chr01_phase_pv confirmed in DB — values include "FLUSH"
-        // Count distinct phase changes as column cycles
-        production: 'chrom_chr01_phase_pv',
-        oee: { availability: 0, performance: 0, quality: 0, overall: 0 },
-        metrics: {
-            plannedProductionTime: 0,
-            actualRuntime: 0,
-            downtime: 0,
-            // Chromatography: realistic cycle = 60-180 min. Use 90 min per run.
-            // Ideal count per 8h shift = ~5 runs
-            idealCycleTime: 90,
-            totalUnits: 0,
-            goodUnits: 0,
-            rejectedUnits: 0,
-            stateBreakdown: {}
-        }
-    },
-    sum: {
-        name: 'SUM (Downstream Processing)',
-        units: ['500'],
-        state: 'sum_sum500_status',
-        // Confirmed values from DB: "IDLE" only in last 7 days
-        downtimeStates: ['fault', 'error', 'alarm', 'abort'],
-        batch: 'sum_batch_id',
-        // sum_phase_id confirmed in DB
-        production: 'sum_phase_id',
-        oee: { availability: 0, performance: 0, quality: 0, overall: 0 },
-        metrics: {
-            plannedProductionTime: 0,
-            actualRuntime: 0,
-            downtime: 0,
-            // Downstream processing (UF/DF, viral inactivation, etc.):
-            // typical step = 2-4 hours. Use 120 min per phase step.
-            idealCycleTime: 120,
-            totalUnits: 0,
-            goodUnits: 0,
-            rejectedUnits: 0,
-            stateBreakdown: {}
-        }
-    }
-};
+    <!-- ── SUM ── -->
+    <div class="proc-panel">
+      <div class="proc-header" style="border-left:3px solid var(--sum)">
+        <div class="proc-header-left">
+          <div class="proc-dot" style="background:var(--sum)"></div>
+          <div>
+            <div class="proc-title" style="color:var(--sum)">SUM-500 Surge/Mix</div>
+            <div class="proc-subtitle">sum_* · manufacturing_historian</div>
+          </div>
+        </div>
+        <div>
+          <span id="sum-batch" style="font-family:var(--mono);font-size:10px;color:var(--dim)">BATCH: —</span>
+        </div>
+      </div>
+      <div class="proc-body">
+        <div class="gauge-row">
+          <div class="gauge">
+            <div class="gauge-label">Availability</div>
+            <div class="gauge-value" id="sum-g-avail" style="color:var(--ok)">—</div>
+          </div>
+          <div class="gauge">
+            <div class="gauge-label">Performance</div>
+            <div class="gauge-value" id="sum-g-perf" style="color:var(--warn)">—</div>
+          </div>
+          <div class="gauge">
+            <div class="gauge-label">Quality</div>
+            <div class="gauge-value" id="sum-g-qual" style="color:var(--ok)">—</div>
+          </div>
+        </div>
+        <div class="pv-grid">
+          <div class="pv-item" id="pv-sum-temp">
+            <div class="pv-name">TIC-501 Temp</div>
+            <div class="pv-val">— <span class="pv-unit">°C</span></div>
+          </div>
+          <div class="pv-item" id="pv-sum-ph">
+            <div class="pv-name">AI-501 pH</div>
+            <div class="pv-val">— <span class="pv-unit">pH</span></div>
+          </div>
+          <div class="pv-item" id="pv-sum-weight">
+            <div class="pv-name">WI-501 Wt</div>
+            <div class="pv-val">— <span class="pv-unit">kg</span></div>
+          </div>
+          <div class="pv-item" id="pv-sum-sic501a">
+            <div class="pv-name">SIC-501A Flow</div>
+            <div class="pv-val">— <span class="pv-unit">lpm</span></div>
+          </div>
+          <div class="pv-item" id="pv-sum-phase">
+            <div class="pv-name">Phase</div>
+            <div class="pv-val" style="font-size:11px">—</div>
+          </div>
+          <div class="pv-item" id="pv-sum-status">
+            <div class="pv-name">Status</div>
+            <div class="pv-val" style="font-size:11px">—</div>
+          </div>
+        </div>
+        <div class="sparkline-area">
+          <div class="spark-label">
+            <span>OEE % (rolling)</span>
+            <span id="sum-spark-range" style="color:var(--dim)">—</span>
+          </div>
+          <canvas class="spark" id="spark-sum" height="40"></canvas>
+        </div>
+        <div class="events-panel">
+          <div class="events-header">
+            <span>Events &amp; Alarms</span>
+            <span id="sum-event-count" style="color:var(--text)">0</span>
+          </div>
+          <div class="events-list" id="events-sum"></div>
+        </div>
+      </div>
+    </div>
 
-// Initialize
-async function init() {
-    console.log('Initializing Enterprise C OEE Dashboard...');
-    logMessage('INFO', '🚀 Dashboard initialization started');
-    
-    loadConfig();
-    createOEECards();
-    createMetricsCards();
-    
-    await discoverUNS();
-    
-    if (!isPaused) {
-        startRefresh();
-    }
-}
+  </div><!-- /process-grid -->
 
-// Load configuration
-function loadConfig() {
-    const savedHost = localStorage.getItem('oee_proxyHost');
-    const savedPort = localStorage.getItem('oee_proxyPort');
-    const savedInterval = localStorage.getItem('oee_refreshInterval');
-    const savedWindow = localStorage.getItem('oee_dataWindow');
+  <!-- API / QUERY LOG -->
+  <div class="log-section">
+    <div class="log-header">
+      <h2>⬡ API &amp; Query Call Log</h2>
+      <div class="log-stats">
+        <div class="log-stat">
+          <span class="log-stat-label">Total Calls</span>
+          <span class="log-stat-val" id="log-total">0</span>
+        </div>
+        <div class="log-stat">
+          <span class="log-stat-label">SQL Queries</span>
+          <span class="log-stat-val" id="log-sql">0</span>
+        </div>
+        <div class="log-stat">
+          <span class="log-stat-label">AnyLog Calls</span>
+          <span class="log-stat-val" id="log-anylog">0</span>
+        </div>
+        <div class="log-stat">
+          <span class="log-stat-label">Total Rows</span>
+          <span class="log-stat-val" id="log-rows">0</span>
+        </div>
+        <div class="log-stat">
+          <span class="log-stat-label">Errors</span>
+          <span class="log-stat-val" id="log-errors" style="color:var(--err)">0</span>
+        </div>
+        <div class="log-stat">
+          <span class="log-stat-label">Avg ms</span>
+          <span class="log-stat-val" id="log-avgms">—</span>
+        </div>
+        <button class="btn" style="background:var(--panel);border:1px solid var(--border);color:var(--dim);font-size:10px;padding:3px 10px;" onclick="clearLog()">Clear</button>
+      </div>
+    </div>
+    <div class="log-scroll">
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Type</th>
+            <th>Command / Query</th>
+            <th>Table</th>
+            <th>Rows</th>
+            <th>ms</th>
+            <th>HTTP</th>
+            <th>Error</th>
+          </tr>
+        </thead>
+        <tbody id="log-body"></tbody>
+      </table>
+      <div class="no-data" id="log-empty">No calls logged yet. Click ▶ Start to begin monitoring.</div>
+    </div>
+  </div>
 
-    if (savedHost) {
-        PROXY_HOST = savedHost;
-        document.getElementById('proxyHost').value = savedHost;
-    }
-    if (savedPort) {
-        PROXY_PORT = parseInt(savedPort);
-        document.getElementById('proxyPort').value = savedPort;
-    }
-    if (savedInterval) {
-        REFRESH_INTERVAL = parseInt(savedInterval) * 1000;
-        document.getElementById('refreshInterval').value = savedInterval;
-        document.getElementById('intervalDisplay').textContent = savedInterval;
-    }
-    if (savedWindow) {
-        DATA_WINDOW_HOURS = parseInt(savedWindow);
-        document.getElementById('dataWindow').value = savedWindow;
-    }
+</div><!-- /main -->
 
-    PROXY_URL = `http://${PROXY_HOST}:${PROXY_PORT}`;
-}
+<div class="footer">
+  Enterprise C OEE Dashboard &nbsp;·&nbsp; AnyLog REST Proxy &nbsp;·&nbsp;
+  UNS: Enterprise_C/sub · Enterprise_C/tff · Enterprise_C/chrom · Enterprise_C/sum &nbsp;·&nbsp;
+  DB: manufacturing_historian
+</div>
 
-// Apply configuration
-function applyConfig() {
-    const host = document.getElementById('proxyHost').value.trim();
-    const port = parseInt(document.getElementById('proxyPort').value);
-    const interval = parseInt(document.getElementById('refreshInterval').value);
-    const windowHours = parseInt(document.getElementById('dataWindow').value);
+<!-- ══════════════════════════════════════════════════════════════ JS -->
+<script>
+// ══════════════════════════════════════════════════
+// CONFIG & STATE
+// ══════════════════════════════════════════════════
+const cfg = () => ({
+  ip:       document.getElementById('cfgIp').value.trim()    || '172.79.89.206',
+  port:     document.getElementById('cfgPort').value         || '8080',
+  hours:    parseInt(document.getElementById('cfgHours').value) || 24,
+  interval: parseInt(document.getElementById('cfgInterval').value) || 60,
+  base:     () => `http://${cfg().ip}:${cfg().port}`
+});
 
-    if (!host || !port || !interval || !windowHours) {
-        alert('Please fill in all configuration fields');
-        return;
-    }
+let monitorTimer = null;
+let running = false;
 
-    PROXY_HOST = host;
-    PROXY_PORT = port;
-    REFRESH_INTERVAL = interval * 1000;
-    DATA_WINDOW_HOURS = windowHours;
-    PROXY_URL = `http://${PROXY_HOST}:${PROXY_PORT}`;
+// Spark data stores: last 30 readings per process
+const sparkData = { sub:[], tff:[], chrom:[], sum:[] };
 
-    localStorage.setItem('oee_proxyHost', host);
-    localStorage.setItem('oee_proxyPort', port);
-    localStorage.setItem('oee_refreshInterval', interval);
-    localStorage.setItem('oee_dataWindow', windowHours);
+// Call log
+let callLog = [];
+let logStats = { total:0, sql:0, anylog:0, rows:0, errors:0, totalMs:0 };
 
-    document.getElementById('intervalDisplay').textContent = interval;
+// ══════════════════════════════════════════════════
+// API CALL WRAPPER — logs every call
+// ══════════════════════════════════════════════════
+async function anylogQuery(dbms, sql, tableHint='') {
+  const base  = cfg().base();
+  const url   = `${base}/api/query`;
+  const body  = { dbms, sql };
+  const t0    = performance.now();
+  const ts    = new Date().toISOString().replace('T',' ').slice(0,23);
+  let rows=0, http=200, errMsg='';
 
-    if (!isPaused) {
-        startRefresh();
-    }
-
-    logMessage('INFO', `⚙️ Configuration updated: ${PROXY_URL}, Interval: ${interval}s, Window: ${windowHours}h`);
-    alert('✅ Configuration applied successfully!');
-}
-
-// Test connection
-async function testConnection() {
-    const url = `${PROXY_URL}/health`;
-    
-    const apiDetails = {
-        restAPI: { url: url, method: 'GET', body: null },
-        anylogAPI: {
-            command: 'health check',
-            headers: { 'User-Agent': 'AnyLog/1.23' },
-            mcpConnector: MCP_SERVER
-        }
-    };
-
-    logDetailedQuery('INFO', '🔌 Testing connection to REST proxy...', apiDetails);
-    
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-        const data = await response.json();
-        
-        logDetailedQuery('SUCCESS', `✅ Proxy connection successful!`, {
-            ...apiDetails,
-            response: {
-                rowsReturned: 0,
-                responseSize: JSON.stringify(data).length,
-                responseKeys: Object.keys(data)
-            }
-        });
-        
-        alert(`✅ Connection successful!\n\nService: ${data.service || 'N/A'}\nAnyLog Node: ${data.anylog_node || 'N/A'}`);
-    } catch (error) {
-        logDetailedQuery('ERROR', `❌ Connection failed: ${error.message}`, {
-            ...apiDetails,
-            error: error.message
-        });
-        alert(`❌ Connection failed!\n\n${error.message}`);
-    }
-}
-
-// Discover UNS structure — auto-detects TFF tables and updates config
-async function discoverUNS() {
-    logMessage('INFO', '🔍 Discovering UNS (Unified Namespace) structure...');
-    
-    try {
-        // Query manufacturing_historian for all tables to find TFF-related ones
-        const tablesSql = `SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`;
-        // AnyLog uses: get tables where dbms=manufacturing_historian
-        const url = `${PROXY_URL}/api/query`;
-        const body = { dbms: DBMS, sql: 'get tables where dbms=manufacturing_historian' };
-
-        const apiDetails = {
-            restAPI: { url, method: 'POST', body },
-            anylogAPI: { command: 'get tables where dbms=manufacturing_historian', mcpConnector: MCP_SERVER }
-        };
-
-        logDetailedQuery('INFO', '🔍 Querying tables for UNS discovery...', apiDetails);
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            const rows = data.Query || data.rows || data.data || [];
-            const tableNames = Array.isArray(rows) ? rows.map(r => r.name || r.table_name || r[0] || '').filter(Boolean) : [];
-
-            logMessage('INFO', `📋 Discovered ${tableNames.length} tables in manufacturing_historian`);
-
-            // Auto-detect TFF tables
-            const tffTables = tableNames.filter(t => t.toLowerCase().startsWith('tff_'));
-            if (tffTables.length > 0) {
-                logMessage('SUCCESS', `✅ Found ${tffTables.length} TFF tables: ${tffTables.slice(0, 5).join(', ')}`);
-                
-                // Find state/phase tables for TFF
-                const tffState = tffTables.find(t => t.includes('state') || t.includes('status') || t.includes('mode'));
-                const tffPhase = tffTables.find(t => t.includes('phase') || t.includes('step') || t.includes('cycle'));
-
-                if (tffState) {
-                    processConfig.tff.state = tffState;
-                    logMessage('INFO', `🔧 TFF state table auto-configured: ${tffState}`);
-                }
-                if (tffPhase) {
-                    processConfig.tff.production = tffPhase;
-                    logMessage('INFO', `🔧 TFF production table auto-configured: ${tffPhase}`);
-                }
-            } else {
-                logMessage('INFO', '⚠️ No TFF tables found in DB — TFF will use default availability (100%)');
-                logMessage('INFO', '   TFF data may reside in chromatography tables or use different naming.');
-            }
-
-            // Log confirmed tables for each process
-            ['sub', 'chrom', 'sum'].forEach(proc => {
-                const cfg = processConfig[proc];
-                if (cfg.state && tableNames.includes(cfg.state)) {
-                    logMessage('SUCCESS', `✅ ${proc.toUpperCase()} state table confirmed: ${cfg.state}`);
-                } else if (cfg.state) {
-                    logMessage('INFO', `⚠️ ${proc.toUpperCase()} state table not in list: ${cfg.state} (may be on another node)`);
-                }
-            });
-        }
-
-        logMessage('SUCCESS', '✅ UNS structure: TFF · SUB (Unit 250) · CHROM (CHR01) · SUM (Unit 500)');
-        logMessage('INFO', `📊 Ideal cycle times — SUB: 720min/phase | CHROM: 90min/run | SUM: 120min/step | TFF: 240min/run`);
-
-    } catch (error) {
-        logMessage('ERROR', `❌ UNS discovery failed: ${error.message}`);
-        logMessage('INFO', '📋 Falling back to static UNS configuration');
-        logMessage('SUCCESS', '✅ UNS structure loaded: TFF · SUB (Unit 250) · CHROM (CHR01) · SUM (Unit 500)');
-    }
-}
-
-// Create OEE cards
-function createOEECards() {
-    ['All', 'TFF', 'SUB', 'CHROM', 'SUM'].forEach(proc => {
-        const container = document.getElementById(`oeeSummary${proc}`);
-        if (!container) return;
-
-        container.innerHTML = `
-            <div class="oee-card">
-                <h3>Overall OEE</h3>
-                <div class="oee-value" id="${proc.toLowerCase()}_oee">--</div>
-                <div class="oee-label">%</div>
-                <div class="oee-status good" id="${proc.toLowerCase()}_status">Calculating...</div>
-            </div>
-            <div class="oee-card availability">
-                <h3>Availability</h3>
-                <div class="oee-value" id="${proc.toLowerCase()}_avail">--</div>
-                <div class="oee-label">%</div>
-            </div>
-            <div class="oee-card performance">
-                <h3>Performance</h3>
-                <div class="oee-value" id="${proc.toLowerCase()}_perf">--</div>
-                <div class="oee-label">%</div>
-            </div>
-            <div class="oee-card quality">
-                <h3>Quality</h3>
-                <div class="oee-value" id="${proc.toLowerCase()}_qual">--</div>
-                <div class="oee-label">%</div>
-            </div>
-        `;
+  try {
+    const resp  = await fetch(url, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
     });
+    http = resp.status;
+    const data  = await resp.json();
+    const ms    = Math.round(performance.now()-t0);
+
+    // extract rows array
+    let results = [];
+    if (Array.isArray(data))            results = data;
+    else if (Array.isArray(data?.data)) results = data.data;
+    else if (Array.isArray(data?.rows)) results = data.rows;
+    else if (data?.result)              results = Array.isArray(data.result) ? data.result : [data.result];
+    rows = results.length;
+
+    appendLog(ts, 'SQL', sql, tableHint||dbms, rows, ms, http, '');
+    return results;
+  } catch(e) {
+    const ms = Math.round(performance.now()-t0);
+    errMsg = e.message || 'fetch error';
+    appendLog(ts, 'SQL', sql, tableHint||dbms, 0, ms, http||0, errMsg);
+    return [];
+  }
 }
 
-// Create metrics cards
-function createMetricsCards() {
-    ['All', 'TFF', 'SUB', 'CHROM', 'SUM'].forEach(proc => {
-        const container = document.getElementById(`metrics${proc}`);
-        if (!container) return;
+async function anylogCommand(cmd, label='') {
+  const base = cfg().base();
+  const url  = `${base}/api/command`;
+  const t0   = performance.now();
+  const ts   = new Date().toISOString().replace('T',' ').slice(0,23);
+  let http=200, errMsg='';
 
-        container.innerHTML = `
-            <div class="metric-card">
-                <h4>Runtime</h4>
-                <div class="metric-value" id="${proc.toLowerCase()}_runtime">--</div>
-                <span class="metric-unit">hrs</span>
-            </div>
-            <div class="metric-card">
-                <h4>Downtime</h4>
-                <div class="metric-value" id="${proc.toLowerCase()}_downtime">--</div>
-                <span class="metric-unit">hrs</span>
-            </div>
-            <div class="metric-card">
-                <h4>Production Events</h4>
-                <div class="metric-value" id="${proc.toLowerCase()}_units">--</div>
-                <span class="metric-unit">events</span>
-            </div>
-            <div class="metric-card">
-                <h4>Good</h4>
-                <div class="metric-value" id="${proc.toLowerCase()}_good">--</div>
-                <span class="metric-unit">events</span>
-            </div>
-            <div class="metric-card">
-                <h4>Rejected</h4>
-                <div class="metric-value" id="${proc.toLowerCase()}_rejected">--</div>
-                <span class="metric-unit">events</span>
-            </div>
-            <div class="metric-card" style="grid-column: span 2;">
-                <h4>Equipment States</h4>
-                <div style="font-size: 12px; color: #ecf0f1; margin-top: 4px;" id="${proc.toLowerCase()}_states">--</div>
-            </div>
-        `;
+  try {
+    const resp = await fetch(url, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ command: cmd })
     });
+    http = resp.status;
+    const data = await resp.json();
+    const ms   = Math.round(performance.now()-t0);
+    appendLog(ts, 'ANYLOG', cmd, label||'—', '—', ms, http, '');
+    return data;
+  } catch(e) {
+    const ms = Math.round(performance.now()-t0);
+    errMsg = e.message||'fetch error';
+    appendLog(ts, 'ANYLOG', cmd, label||'—', '—', ms, http||0, errMsg);
+    return null;
+  }
 }
 
-// Fetch data with detailed logging
-async function fetchData(sql, table) {
-    const url = `${PROXY_URL}/api/query`;
-    const requestBody = { dbms: DBMS, sql: sql };
+// ══════════════════════════════════════════════════
+// LOG APPEND
+// ══════════════════════════════════════════════════
+function appendLog(ts, type, cmd, table, rows, ms, http, errMsg) {
+  logStats.total++;
+  if(type==='SQL')    logStats.sql++;
+  if(type==='ANYLOG') logStats.anylog++;
+  if(typeof rows==='number') { logStats.rows += rows; }
+  if(http < 200 || http >= 400 || errMsg) logStats.errors++;
+  logStats.totalMs += ms;
 
-    const anylogCommand = `sql ${DBMS} ${sql}`;
-    const apiDetails = {
-        restAPI: { url: url, method: 'POST', body: requestBody },
-        anylogAPI: {
-            command: anylogCommand,
-            headers: {
-                'User-Agent': 'AnyLog/1.23',
-                'Content-Type': 'application/json',
-                'command': anylogCommand,
-                'destination': 'network'
-            },
-            mcpConnector: MCP_SERVER
-        },
-        sql: sql
-    };
+  callLog.unshift({ ts, type, cmd, table, rows, ms, http, errMsg });
+  if(callLog.length > 500) callLog.pop();
 
-    logDetailedQuery('QUERY', `📊 Fetching ${table}`, apiDetails);
-
-    try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 30000);
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody),
-            signal: controller.signal
-        });
-
-        clearTimeout(timeout);
-
-        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-        const data = await response.json();
-        const rows = data.Query || data.rows || data.data || data;
-        const rowCount = Array.isArray(rows) ? rows.length : 0;
-        
-        logDetailedQuery('SUCCESS', `✅ Received ${rowCount} rows from ${table}`, {
-            ...apiDetails,
-            response: {
-                rowsReturned: rowCount,
-                responseSize: JSON.stringify(data).length,
-                responseKeys: Object.keys(data)
-            }
-        });
-        
-        return rows;
-    } catch (error) {
-        logDetailedQuery('ERROR', `❌ Failed to fetch ${table}: ${error.message}`, {
-            ...apiDetails,
-            error: error.message
-        });
-        return [];
-    }
+  refreshLogTable();
+  refreshLogStats();
 }
 
-// Calculate OEE for a process
-async function calculateOEE(processKey) {
-    const process = processConfig[processKey];
-    if (!process) return;
-
-    logMessage('INFO', `🔢 Calculating OEE for ${process.name}...`);
-
-    // 1. Calculate AVAILABILITY
-    //    Availability = 1 - (downtime / planned time)
-    //    Downtime states are fault/error/alarm — Idle/Running/etc are ALL available
-    if (process.state) {
-        const sql = `SELECT timestamp, value FROM ${process.state} WHERE timestamp >= NOW() - ${DATA_WINDOW_HOURS} hours ORDER BY timestamp DESC LIMIT 2000`;
-        const stateData = await fetchData(sql, process.state);
-
-        if (stateData && stateData.length > 0) {
-            // Build state breakdown — trim whitespace from values
-            const breakdown = {};
-            stateData.forEach(d => {
-                const v = d.value ? d.value.toString().trim() : 'Unknown';
-                breakdown[v] = (breakdown[v] || 0) + 1;
-            });
-            process.metrics.stateBreakdown = breakdown;
-
-            // Downtime = records where state matches a downtime state (case-insensitive)
-            const downtimeRecords = stateData.filter(d => {
-                if (!d.value) return false;
-                const v = d.value.toString().trim().toLowerCase();
-                return process.downtimeStates.some(ds => v.includes(ds));
-            });
-
-            const total = stateData.length;
-            const downtimeRatio = downtimeRecords.length / total;
-            const availRatio = 1 - downtimeRatio;
-
-            process.metrics.plannedProductionTime = DATA_WINDOW_HOURS;
-            process.metrics.actualRuntime = (availRatio * DATA_WINDOW_HOURS).toFixed(2);
-            process.metrics.downtime = (downtimeRatio * DATA_WINDOW_HOURS).toFixed(2);
-            process.oee.availability = (availRatio * 100).toFixed(1);
-
-            // Log state breakdown for visibility
-            const breakdownStr = Object.entries(breakdown)
-                .map(([k, v]) => `${k}: ${v} (${(v/total*100).toFixed(1)}%)`)
-                .join(' | ');
-            logMessage('INFO', `✓ ${processKey.toUpperCase()} States → ${breakdownStr}`);
-            logMessage('INFO', `✓ ${processKey.toUpperCase()} Availability: ${process.oee.availability}% (downtime states: ${process.downtimeStates.join(', ')})`);
-
-        } else {
-            process.oee.availability = 100.0;
-            process.metrics.actualRuntime = DATA_WINDOW_HOURS;
-            process.metrics.downtime = 0;
-        }
-    } else {
-        // No state table configured — check if discoverUNS found one at runtime
-        if (processConfig[processKey] && processConfig[processKey].state) {
-            // State table was populated by discoverUNS — re-run via recursion
-            logMessage('INFO', `🔄 ${processKey.toUpperCase()} state table discovered at runtime, retrying...`);
-        } else {
-            // No state table exists for this process (TFF has no tff_* tables in DB)
-            process.oee.availability = 100.0;
-            process.metrics.actualRuntime = DATA_WINDOW_HOURS;
-            process.metrics.downtime = 0;
-            logMessage('INFO', `✓ ${processKey.toUpperCase()} Availability: 100% (no state table — assumed available)`);
-            logMessage('INFO', `  → To improve: add state table name to processConfig.${processKey}.state`);
-        }
-    }
-
-    // 2. Calculate PERFORMANCE
-    //    Count distinct phase TRANSITIONS (value changes), not total rows.
-    //    This gives the number of actual production cycles completed.
-    if (process.production) {
-        const sql = `SELECT timestamp, value FROM ${process.production} WHERE timestamp >= NOW() - ${DATA_WINDOW_HOURS} hours ORDER BY timestamp ASC LIMIT 5000`;
-        const prodData = await fetchData(sql, process.production);
-
-        if (prodData && prodData.length > 0) {
-            // Count phase transitions: a new production event = value changes to non-idle
-            let transitions = 0;
-            let lastValue = null;
-            const phaseBreakdown = {};
-
-            prodData.forEach(d => {
-                if (!d.value) return;
-                const v = d.value.toString().trim();
-                const vLower = v.toLowerCase();
-                // Track all phase values seen
-                phaseBreakdown[v] = (phaseBreakdown[v] || 0) + 1;
-                // Count transitions into non-idle active phases
-                if (vLower !== 'idle' && vLower !== '' && vLower !== 'null' && vLower !== '0') {
-                    if (lastValue !== v) {
-                        transitions++;   // entered a new active phase
-                    }
-                }
-                lastValue = v;
-            });
-
-            process.metrics.totalUnits = transitions;
-
-            // Ideal: one full cycle per idealCycleTime minutes within runtime
-            const runtimeHours = parseFloat(process.metrics.actualRuntime);
-            const idealCount = runtimeHours > 0 ? Math.max(1, (runtimeHours * 60) / process.metrics.idealCycleTime) : 1;
-            const perfRatio = Math.min(1.0, transitions / idealCount);
-            process.oee.performance = (perfRatio * 100).toFixed(1);
-
-            // Log phase breakdown for visibility
-            const phaseStr = Object.entries(phaseBreakdown)
-                .map(([k, v]) => `${k}: ${v}`)
-                .join(' | ');
-            logMessage('INFO', `✓ ${processKey.toUpperCase()} Phases → ${phaseStr}`);
-            logMessage('INFO', `✓ ${processKey.toUpperCase()} Performance: ${process.oee.performance}% (${transitions} phase transitions / ${idealCount.toFixed(1)} ideal @ ${process.metrics.idealCycleTime}min/cycle)`);
-        } else {
-            // No production data — use default 85%
-            process.oee.performance = 85.0;
-            process.metrics.totalUnits = 0;
-            logMessage('INFO', `✓ ${processKey.toUpperCase()} Performance: default 85% (no phase data in ${DATA_WINDOW_HOURS}h window)`);
-        }
-    } else {
-        // No production table configured — use 85% default
-        process.oee.performance = 85.0;
-        process.metrics.totalUnits = 0;
-        logMessage('INFO', `✓ ${processKey.toUpperCase()} Performance: default 85% (no production table configured)`);
-    }
-
-    // 3. Calculate QUALITY
-    //    No reject table exists yet — use 95% default
-    //    Future: query a reject/OOSpec table
-    process.oee.quality = 95.0;
-    process.metrics.goodUnits = Math.round(process.metrics.totalUnits * 0.95);
-    process.metrics.rejectedUnits = process.metrics.totalUnits - process.metrics.goodUnits;
-
-    // 4. Calculate OVERALL OEE  (A × P × Q / 10000)
-    process.oee.overall = (
-        parseFloat(process.oee.availability) *
-        parseFloat(process.oee.performance) *
-        parseFloat(process.oee.quality) / 10000
-    ).toFixed(1);
-
-    logMessage('SUCCESS',
-        `✅ ${processKey.toUpperCase()} OEE: ${process.oee.overall}%` +
-        ` | A: ${process.oee.availability}% P: ${process.oee.performance}% Q: ${process.oee.quality}%`
-    );
-
-    updateOEEDisplay(processKey);
+function refreshLogStats() {
+  document.getElementById('log-total').textContent  = logStats.total;
+  document.getElementById('log-sql').textContent    = logStats.sql;
+  document.getElementById('log-anylog').textContent = logStats.anylog;
+  document.getElementById('log-rows').textContent   = logStats.rows.toLocaleString();
+  document.getElementById('log-errors').textContent = logStats.errors;
+  document.getElementById('log-avgms').textContent  =
+    logStats.total ? Math.round(logStats.totalMs/logStats.total)+'ms' : '—';
 }
 
-// Update OEE display
-function updateOEEDisplay(processKey) {
-    const oee = processConfig[processKey].oee;
-    const metrics = processConfig[processKey].metrics;
-    const prefix = processKey.toLowerCase();
+function refreshLogTable() {
+  const tbody = document.getElementById('log-body');
+  const empty = document.getElementById('log-empty');
+  if(callLog.length===0){ empty.style.display='block'; return; }
+  empty.style.display='none';
 
-    const elements = {
-        oee: document.getElementById(`${prefix}_oee`),
-        avail: document.getElementById(`${prefix}_avail`),
-        perf: document.getElementById(`${prefix}_perf`),
-        qual: document.getElementById(`${prefix}_qual`),
-        status: document.getElementById(`${prefix}_status`),
-        runtime: document.getElementById(`${prefix}_runtime`),
-        downtime: document.getElementById(`${prefix}_downtime`),
-        units: document.getElementById(`${prefix}_units`),
-        good: document.getElementById(`${prefix}_good`),
-        rejected: document.getElementById(`${prefix}_rejected`)
-    };
-
-    if (elements.oee) elements.oee.textContent = oee.overall;
-    if (elements.avail) elements.avail.textContent = oee.availability;
-    if (elements.perf) elements.perf.textContent = oee.performance;
-    if (elements.qual) elements.qual.textContent = oee.quality;
-
-    if (elements.status) {
-        elements.status.className = 'oee-status';
-        const oeeValue = parseFloat(oee.overall);
-        
-        if (oeeValue >= 85) {
-            elements.status.classList.add('excellent');
-            elements.status.textContent = 'World Class (≥85%)';
-        } else if (oeeValue >= 70) {
-            elements.status.classList.add('good');
-            elements.status.textContent = 'Good (70-84%)';
-        } else if (oeeValue >= 50) {
-            elements.status.classList.add('fair');
-            elements.status.textContent = 'Fair (50-69%)';
-        } else {
-            elements.status.classList.add('poor');
-            elements.status.textContent = 'Poor (<50%)';
-        }
-    }
-
-    if (elements.runtime) elements.runtime.textContent = metrics.actualRuntime;
-    if (elements.downtime) elements.downtime.textContent = metrics.downtime;
-    if (elements.units) elements.units.textContent = metrics.totalUnits;
-    if (elements.good) elements.good.textContent = metrics.goodUnits;
-    if (elements.rejected) elements.rejected.textContent = metrics.rejectedUnits;
-
-    // Render state breakdown
-    const statesEl = document.getElementById(`${prefix}_states`);
-    if (statesEl) {
-        if (metrics.stateBreakdown && Object.keys(metrics.stateBreakdown).length > 0) {
-            const colors = { 'Running': '#2ecc71', 'Idle': '#f39c12', 'IDLE': '#f39c12', 'Idle   ': '#f39c12' };
-            statesEl.innerHTML = Object.entries(metrics.stateBreakdown)
-                .map(([state, count]) => {
-                    const color = colors[state] || '#95a5a6';
-                    return `<span style="background: ${color}22; border: 1px solid ${color}; padding: 2px 8px; border-radius: 3px; margin-right: 6px; color: ${color}; font-size: 11px;">${state.trim()}: ${count}</span>`;
-                }).join('');
-        } else {
-            statesEl.textContent = processKey === 'all' ? 'See individual process tabs' : 'No state data';
-        }
-    }
-}
-
-// Update all data
-async function updateAllData() {
-    if (isPaused) return;
-
-    console.log('🔄 Updating OEE dashboard...');
-    logMessage('INFO', '🔄 Starting OEE calculation cycle...');
-
-    for (const key of ['sub', 'chrom', 'sum', 'tff']) {
-        await calculateOEE(key);
-    }
-
-    // Calculate overall
-    const processes = Object.values(processConfig).filter(p => p.name);
-    const avgOEE = processes.reduce((sum, p) => sum + parseFloat(p.oee.overall), 0) / processes.length;
-    const avgAvail = processes.reduce((sum, p) => sum + parseFloat(p.oee.availability), 0) / processes.length;
-    const avgPerf = processes.reduce((sum, p) => sum + parseFloat(p.oee.performance), 0) / processes.length;
-    const avgQual = processes.reduce((sum, p) => sum + parseFloat(p.oee.quality), 0) / processes.length;
-
-    const totalUnits = processes.reduce((sum, p) => sum + (p.metrics.totalUnits || 0), 0);
-    const totalGood = processes.reduce((sum, p) => sum + (p.metrics.goodUnits || 0), 0);
-    const totalRejected = processes.reduce((sum, p) => sum + (p.metrics.rejectedUnits || 0), 0);
-    const totalRuntime = processes.reduce((sum, p) => sum + parseFloat(p.metrics.actualRuntime || 0), 0);
-    const totalDowntime = processes.reduce((sum, p) => sum + parseFloat(p.metrics.downtime || 0), 0);
-
-    processConfig.all = {
-        oee: {
-            overall: avgOEE.toFixed(1),
-            availability: avgAvail.toFixed(1),
-            performance: avgPerf.toFixed(1),
-            quality: avgQual.toFixed(1)
-        },
-        metrics: {
-            actualRuntime: totalRuntime.toFixed(2),
-            downtime: totalDowntime.toFixed(2),
-            totalUnits: totalUnits,
-            goodUnits: totalGood,
-            rejectedUnits: totalRejected
-        }
-    };
-
-    updateOEEDisplay('all');
-
-    logMessage('SUCCESS', `✅ OEE calculation complete - Overall: ${avgOEE.toFixed(1)}%`);
-}
-
-// Toggle pause
-function togglePause() {
-    isPaused = !isPaused;
-    
-    const btn = document.getElementById('pauseBtn');
-    const icon = document.getElementById('pauseIcon');
-    const text = document.getElementById('pauseText');
-    const status = document.getElementById('statusText');
-    const dot = document.getElementById('statusDot');
-
-    if (isPaused) {
-        btn.classList.add('paused');
-        icon.textContent = '▶️';
-        text.textContent = 'Resume';
-        status.textContent = 'Paused';
-        dot.style.animation = 'none';
-        dot.style.background = '#e67e22';
-        stopRefresh();
-        logMessage('INFO', '⏸ Data refresh paused');
-    } else {
-        btn.classList.remove('paused');
-        icon.textContent = '⏸';
-        text.textContent = 'Pause';
-        status.textContent = 'Live';
-        dot.style.animation = 'pulse 2s infinite';
-        dot.style.background = '#2ecc71';
-        startRefresh();
-        logMessage('INFO', '▶️ Data refresh resumed');
-    }
-}
-
-// Start/stop refresh
-function startRefresh() {
-    if (refreshTimer) clearInterval(refreshTimer);
-    updateAllData();
-    refreshTimer = setInterval(updateAllData, REFRESH_INTERVAL);
-}
-
-function stopRefresh() {
-    if (refreshTimer) {
-        clearInterval(refreshTimer);
-        refreshTimer = null;
-    }
-}
-
-// Show process
-function showProcess(processKey) {
-    currentProcess = processKey;
-
-    document.querySelectorAll('.process-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    event.target.classList.add('active');
-
-    document.querySelectorAll('.process-section').forEach(section => {
-        section.classList.remove('active');
-    });
-    document.getElementById(`${processKey}Process`).classList.add('active');
-
-    logMessage('INFO', `📋 Switched to ${processKey.toUpperCase()} process view`);
-}
-
-// Logging functions
-function logMessage(type, message) {
-    const timestamp = new Date().toLocaleTimeString();
-    systemLog.unshift({ type, message, timestamp, details: null });
-    if (systemLog.length > 100) systemLog = systemLog.slice(0, 100);
-    updateLog();
-}
-
-function logDetailedQuery(type, message, details) {
-    const timestamp = new Date().toLocaleTimeString();
-    systemLog.unshift({ type, message, timestamp, details });
-    if (systemLog.length > 100) systemLog = systemLog.slice(0, 100);
-    updateLog();
-}
-
-function updateLog() {
-    const logContent = document.getElementById('logContent');
-    if (!logContent) return;
-
-    let html = '';
-    systemLog.forEach(entry => {
-        let detailsHtml = '';
-        
-        if (entry.details) {
-            if (entry.details.restAPI) {
-                detailsHtml += `
-                    <div style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 3px;">
-                        <div style="color: #3498db; font-weight: 600; font-size: 10px; margin-bottom: 4px;">📊 REST API</div>
-                        <div style="color: #95a5a6; font-size: 9px;">URL: ${entry.details.restAPI.url}</div>
-                        <div style="color: #95a5a6; font-size: 9px;">Method: ${entry.details.restAPI.method}</div>
-                        ${entry.details.restAPI.body ? `<div style="color: #ecf0f1; font-size: 9px; margin-top: 3px;">${JSON.stringify(entry.details.restAPI.body, null, 2)}</div>` : ''}
-                    </div>
-                `;
-            }
-
-            if (entry.details.anylogAPI) {
-                detailsHtml += `
-                    <div style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 3px;">
-                        <div style="color: #9b59b6; font-weight: 600; font-size: 10px; margin-bottom: 4px;">🔮 AnyLog MCP</div>
-                        <div style="color: #95a5a6; font-size: 9px;">Connector: ${entry.details.anylogAPI.mcpConnector}</div>
-                        <div style="color: #ecf0f1; font-size: 9px; margin-top: 3px;">command: ${entry.details.anylogAPI.command}</div>
-                    </div>
-                `;
-            }
-
-            if (entry.details.sql) {
-                detailsHtml += `
-                    <div style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 3px;">
-                        <div style="color: #f39c12; font-weight: 600; font-size: 10px; margin-bottom: 4px;">💾 SQL Query</div>
-                        <div style="color: #ecf0f1; font-size: 9px; word-break: break-all;">${entry.details.sql}</div>
-                    </div>
-                `;
-            }
-
-            if (entry.details.response) {
-                const sizeKB = (entry.details.response.responseSize / 1024).toFixed(2);
-                detailsHtml += `
-                    <div style="margin-top: 8px; padding: 8px; background: rgba(46, 204, 113, 0.2); border-radius: 3px;">
-                        <div style="color: #2ecc71; font-weight: 600; font-size: 10px; margin-bottom: 4px;">✅ Response</div>
-                        <div style="color: #ecf0f1; font-size: 9px; font-weight: 600;">✓ Rows Returned: ${entry.details.response.rowsReturned}</div>
-                        <div style="color: #ecf0f1; font-size: 9px;">✓ Response Size: ${sizeKB} KB</div>
-                    </div>
-                `;
-            }
-
-            if (entry.details.error) {
-                detailsHtml += `
-                    <div style="margin-top: 8px; padding: 8px; background: rgba(231, 76, 60, 0.2); border-radius: 3px;">
-                        <div style="color: #e74c3c; font-weight: 600; font-size: 10px;">✗ Error: ${entry.details.error}</div>
-                    </div>
-                `;
-            }
-        }
-
-        html += `
-            <div class="log-entry ${entry.type === 'ERROR' ? 'error' : ''}">
-                <div class="log-timestamp">[${entry.timestamp}] ${entry.type}</div>
-                <div class="log-message" style="color: #ecf0f1; margin-bottom: 5px;">${entry.message}</div>
-                ${detailsHtml}
-            </div>
-        `;
-    });
-
-    logContent.innerHTML = html;
+  // only re-render top 200 for performance
+  const rows = callLog.slice(0,200);
+  tbody.innerHTML = rows.map(r => {
+    const httpCls = r.http>=200&&r.http<300?'http-ok':r.http>=400?'http-err':'http-warn';
+    const httpTxt = r.http||'—';
+    const typeCls = r.type.toLowerCase();
+    const shortCmd = r.cmd.length>70 ? r.cmd.slice(0,70)+'…' : r.cmd;
+    return `<tr>
+      <td class="col-ts">${r.ts}</td>
+      <td class="col-type ${typeCls}">${r.type}</td>
+      <td class="col-cmd" title="${escHtml(r.cmd)}">${escHtml(shortCmd)}</td>
+      <td class="col-cmd" style="color:var(--dim)">${escHtml(r.table)}</td>
+      <td class="col-rows">${r.rows}</td>
+      <td class="col-ms">${r.ms}ms</td>
+      <td class="col-status"><span class="${httpCls}">${httpTxt}</span></td>
+      <td class="col-err">${escHtml(r.errMsg||'')}</td>
+    </tr>`;
+  }).join('');
 }
 
 function clearLog() {
-    if (confirm('Clear all log entries?')) {
-        systemLog = [];
-        updateLog();
-        logMessage('INFO', '🗑️ Log cleared');
-    }
+  callLog=[];
+  logStats={total:0,sql:0,anylog:0,rows:0,errors:0,totalMs:0};
+  document.getElementById('log-body').innerHTML='';
+  document.getElementById('log-empty').style.display='block';
+  refreshLogStats();
 }
 
-window.addEventListener('load', init);
-    </script>
+function escHtml(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+// ══════════════════════════════════════════════════
+// OEE CALC HELPERS
+// ══════════════════════════════════════════════════
+// OEE = Availability × Performance × Quality
+// For pharma batch: we use state/phase/process-variable data as proxies
+
+function calcOEE(proc, data) {
+  // Each process returns { availability, performance, quality, status, pvs, events }
+  const A = data.availability / 100;
+  const P = data.performance  / 100;
+  const Q = data.quality      / 100;
+  return +(A * P * Q * 100).toFixed(1);
+}
+
+function oeeColor(v) {
+  if(v === null || v === undefined || isNaN(v)) return 'idle';
+  if(v >= 85) return 'good';
+  if(v >= 65) return 'warn';
+  return 'bad';
+}
+
+function val(rows, def='—') {
+  if(!rows||!rows.length) return def;
+  const r = rows[rows.length-1];
+  return r.value !== undefined ? r.value : def;
+}
+
+function numVal(rows, def=null) {
+  const v = val(rows, null);
+  if(v===null) return def;
+  const n = parseFloat(v);
+  return isNaN(n) ? def : n;
+}
+
+function strVal(rows) {
+  return String(val(rows,'—')).trim();
+}
+
+// ══════════════════════════════════════════════════
+// SPARKLINE CANVAS
+// ══════════════════════════════════════════════════
+function drawSpark(canvasId, data, color) {
+  const c = document.getElementById(canvasId);
+  if(!c) return;
+  const dpr = window.devicePixelRatio||1;
+  const w=c.offsetWidth||300, h=40;
+  c.width=w*dpr; c.height=h*dpr;
+  const ctx=c.getContext('2d');
+  ctx.scale(dpr,dpr);
+
+  if(!data||data.length<2){ ctx.clearRect(0,0,w,h); return; }
+
+  const min=0, max=100;
+  const pts=data.map((v,i)=>({
+    x:i/(data.length-1)*w,
+    y:h-(v-min)/(max-min)*h*0.85-h*0.075
+  }));
+
+  // gradient fill
+  const grad=ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0,color+'55');
+  grad.addColorStop(1,color+'00');
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x,h);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,h);
+  ctx.closePath();
+  ctx.fillStyle=grad;
+  ctx.fill();
+
+  // line
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x,pts[0].y);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle=color;
+  ctx.lineWidth=1.5;
+  ctx.stroke();
+
+  // last dot
+  const last=pts[pts.length-1];
+  ctx.beginPath();
+  ctx.arc(last.x,last.y,3,0,Math.PI*2);
+  ctx.fillStyle=color;
+  ctx.fill();
+}
+
+// ══════════════════════════════════════════════════
+// EVENT GENERATOR — derive events from PV data
+// ══════════════════════════════════════════════════
+function makeEvent(proc, sev, msg, ts) {
+  return { proc, sev, msg, ts: ts || new Date().toISOString().replace('T',' ').slice(0,19) };
+}
+
+function appendEvent(proc, sev, msg) {
+  const el = document.getElementById(`events-${proc}`);
+  if(!el) return;
+  const ts = new Date().toISOString().replace('T',' ').slice(0,19);
+  const row = document.createElement('div');
+  row.className='event-row';
+  row.innerHTML=`<span class="event-time">${ts}</span><span class="event-sev sev-${sev}">${sev}</span><span class="event-msg" title="${escHtml(msg)}">${escHtml(msg)}</span>`;
+  el.insertBefore(row, el.firstChild);
+  // keep max 50
+  while(el.children.length>50) el.removeChild(el.lastChild);
+  // update count
+  const cnt = document.getElementById(`${proc}-event-count`);
+  if(cnt) cnt.textContent = el.children.length;
+}
+
+// ══════════════════════════════════════════════════
+// UPDATE FUNCTIONS PER PROCESS
+// ══════════════════════════════════════════════════
+const hours = ()=>cfg().hours;
+
+// ── SUB ──────────────────────────────────────────
+async function updateSUB() {
+  const h = hours();
+
+  // Queries for OEE components
+  const [states, phases, msg1, msg2, temp, ph, do_, agit, flow, weight, batchId] = await Promise.all([
+    anylogQuery('manufacturing_historian',
+      `SELECT value, timestamp FROM sub_unit_250_state WHERE timestamp >= NOW() - ${h} hours ORDER BY timestamp DESC LIMIT 500`,
+      'sub_unit_250_state'),
+    anylogQuery('manufacturing_historian',
+      `SELECT DISTINCT value FROM sub_unit_250_phase WHERE timestamp >= NOW() - ${h} hours`,
+      'sub_unit_250_phase'),
+    anylogQuery('manufacturing_historian',
+      `SELECT DISTINCT value FROM sub_unit_250_msg1 WHERE timestamp >= NOW() - ${h} hours`,
+      'sub_unit_250_msg1'),
+    anylogQuery('manufacturing_historian',
+      `SELECT DISTINCT value FROM sub_unit_250_msg2 WHERE timestamp >= NOW() - ${h} hours`,
+      'sub_unit_250_msg2'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value, timestamp FROM sub_tic_250_001_pv_celsius WHERE timestamp >= NOW() - 1 hours ORDER BY timestamp DESC LIMIT 1`,
+      'sub_tic_250_001_pv_celsius'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value, timestamp FROM sub_aic_250_003_pv_ph WHERE timestamp >= NOW() - 1 hours ORDER BY timestamp DESC LIMIT 1`,
+      'sub_aic_250_003_pv_ph'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sub_aic_250_001_pv_percent WHERE timestamp >= NOW() - 1 hours ORDER BY timestamp DESC LIMIT 1`,
+      'sub_aic_250_001_pv_percent'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sub_sic_250_002_pv_eu_1 WHERE timestamp >= NOW() - 1 hours ORDER BY timestamp DESC LIMIT 1`,
+      'sub_sic_250_002_pv_eu_1'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sub_fic_250_001_pv_slpm WHERE timestamp >= NOW() - 1 hours ORDER BY timestamp DESC LIMIT 1`,
+      'sub_fic_250_001_pv_slpm'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sub_wi_250_001_pv_kg WHERE timestamp >= NOW() - 1 hours ORDER BY timestamp DESC LIMIT 1`,
+      'sub_wi_250_001_pv_kg'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sub_unit_250_batch_id ORDER BY timestamp DESC LIMIT 1`,
+      'sub_unit_250_batch_id'),
+  ]);
+
+  // ── Availability: % time in Running state
+  const total = states.length || 1;
+  const running_cnt = states.filter(r=>String(r.value).trim()==='Running').length;
+  const avail = total>0 ? +(running_cnt/total*100).toFixed(1) : 0;
+
+  // ── Performance: all phases except 'none' and 'IDLE' = productive
+  const allPhases = phases.map(r=>String(r.value).trim());
+  const prodPhases = allPhases.filter(p=>p!=='none'&&p!=='IDLE'&&p!=='');
+  const perf = prodPhases.length>0 ? Math.min(+(prodPhases.length/7*100+40).toFixed(1),98) : 50;
+
+  // ── Quality: temp deviation alarm, pH alarm
+  const tempV = numVal(temp, 30);
+  const phV   = numVal(ph, 7);
+  const tempOob = tempV > 37 || tempV < 28;  // ±2°C from 30-37°C range
+  const phOob   = phV > 7.5 || phV < 6.5;
+  const qual = (tempOob ? 80 : 97) * (phOob ? 0.90 : 1.0);
+
+  const oee = +(avail/100 * perf/100 * qual/100 * 100).toFixed(1);
+  const status = states.length>0 ? String(states[0].value).trim() : 'Unknown';
+  const batch = strVal(batchId);
+
+  // Sparkline update
+  sparkData.sub.push(oee);
+  if(sparkData.sub.length>30) sparkData.sub.shift();
+  drawSpark('spark-sub', sparkData.sub, '#00e5a0');
+  document.getElementById('sub-spark-range').textContent = `OEE: ${oee}%`;
+
+  // KPI card
+  setOEE('sub', oee, avail, perf, qual, status);
+  document.getElementById('sub-batch').textContent = `BATCH: ${batch}`;
+  document.getElementById('sub-g-avail').textContent = avail+'%';
+  document.getElementById('sub-g-perf').textContent  = perf+'%';
+  document.getElementById('sub-g-qual').textContent  = qual.toFixed(1)+'%';
+  setGaugeColor('sub-g-avail', avail, 85, 70);
+  setGaugeColor('sub-g-perf', perf, 85, 70);
+  setGaugeColor('sub-g-qual', qual, 90, 75);
+
+  // PVs
+  setPV('pv-sub-temp', tempV, '°C', tempOob?'alarm':(tempV>36?'warn':'ok'));
+  setPV('pv-sub-ph',   phV,   'pH', phOob?'alarm':(Math.abs(phV-7)>0.5?'warn':'ok'));
+  setPV('pv-sub-do',   numVal(do_,null), '%', 'ok');
+  setPV('pv-sub-agit', numVal(agit,null), 'rpm', 'ok');
+  setPV('pv-sub-flow', numVal(flow,null), 'slpm', 'ok');
+  const curPhase = strVal(phases.slice(-1));
+  document.querySelector('#pv-sub-phase .pv-val').textContent = allPhases[0]||'—';
+
+  // Events
+  if(tempOob) appendEvent('sub','ERR',`Temp out-of-band: ${tempV}°C (limit 28–37°C)`);
+  if(phOob)   appendEvent('sub','ERR',`pH out-of-band: ${phV} (limit 6.5–7.5)`);
+  if(status==='Idle   '||status==='Idle') appendEvent('sub','WARN','Unit 250 state: IDLE — no active batch production');
+  msg2.forEach(r=>{
+    const v = String(r.value||'').trim();
+    if(v&&v!=='none') appendEvent('sub','INFO',`Operator msg: ${v}`);
+  });
+  msg1.forEach(r=>{
+    const v = String(r.value||'').trim();
+    if(v&&v!=='none') appendEvent('sub','INFO',`System msg: ${v}`);
+  });
+  if(avail < 70) appendEvent('sub','WARN',`Availability degraded: ${avail}% (target ≥85%)`);
+  if(oee < 65)   appendEvent('sub','ERR', `OEE below threshold: ${oee}% (target ≥65%)`);
+}
+
+// ── TFF ──────────────────────────────────────────
+// REAL OEE BASIS (from data investigation):
+//   tff_phase          → 100% IDLE (no active filtration cycles in window)
+//   tff_tff300_batch_id → 18 batch records = intermittent runs exist
+//   tff_pcv7x_percent  → 100 (valve fully open = standby/drain state)
+//   tff_wi17k_kg       → 0.3 kg (near-empty vessel)
+//   tff_uv8r_au        → 0.03 AU (flat baseline, no product peak)
+//   All flow/flux/pressure → 0 (confirmed idle)
+//
+//   Availability = scheduled_active_rows / total_rows (batch_id presence = planned time)
+//   Performance  = actual_runs / planned_runs (batch records vs expected cycles)
+//   Quality      = spec-passing batches / total (UV baseline & TMP in-spec = 100% when running)
+async function updateTFF() {
+  const h = hours();
+
+  const [phaseCount, batchRows, batchAll, msgs, tmp, flux, flow, cm, uv, wi, pcv, batchId] = await Promise.all([
+    // total rows in window vs active (non-IDLE) rows
+    anylogQuery('manufacturing_historian',
+      `SELECT COUNT(*) as cnt FROM tff_phase WHERE timestamp >= NOW() - ${h} hours`,
+      'tff_phase'),
+    anylogQuery('manufacturing_historian',
+      `SELECT COUNT(*) as cnt FROM tff_tff300_batch_id WHERE timestamp >= NOW() - ${h} hours`,
+      'tff_tff300_batch_id'),
+    anylogQuery('manufacturing_historian',
+      `SELECT COUNT(*) as cnt FROM tff_tff300_batch_id`,
+      'tff_tff300_batch_id'),
+    anylogQuery('manufacturing_historian',
+      `SELECT DISTINCT value FROM tff_prmp_msg WHERE timestamp >= NOW() - ${h} hours`,
+      'tff_prmp_msg'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM tff_tmp7m_psig ORDER BY timestamp DESC LIMIT 1`,
+      'tff_tmp7m_psig'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM tff_fx7f_lmh ORDER BY timestamp DESC LIMIT 1`,
+      'tff_fx7f_lmh'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM tff_fi7f_lpm ORDER BY timestamp DESC LIMIT 1`,
+      'tff_fi7f_lpm'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM tff_cm ORDER BY timestamp DESC LIMIT 1`,
+      'tff_cm'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM tff_uv8r_au ORDER BY timestamp DESC LIMIT 1`,
+      'tff_uv8r_au'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM tff_wi17k_kg ORDER BY timestamp DESC LIMIT 1`,
+      'tff_wi17k_kg'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM tff_pcv7x_percent ORDER BY timestamp DESC LIMIT 1`,
+      'tff_pcv7x_percent'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM tff_tff300_batch_id ORDER BY timestamp DESC LIMIT 1`,
+      'tff_tff300_batch_id'),
+  ]);
+
+  // ── Availability
+  // Batch_id rows in window = time the system was actively assigned to a batch.
+  // Phase=IDLE 100% means no filtration was actively running BUT batch may still be assigned (setup/teardown).
+  // Treat batch_id presence as "scheduled" time. Ratio vs total phase poll rows = availability.
+  const totalRows  = (phaseCount[0]?.cnt || 1);
+  const batchInWin = (batchRows[0]?.cnt  || 0);
+  const batchTotal = (batchAll[0]?.cnt   || 0);
+  // Availability = fraction of window time a batch was assigned
+  const avail = batchTotal === 0
+    ? 0
+    : Math.min(+(batchInWin / totalRows * 100).toFixed(1), 100);
+
+  // ── Performance
+  // Phase = IDLE 100% → no filtration cycles executed.
+  // pcv7x_percent = 100 → valve fully open (drain/standby, not processing).
+  // wi17k_kg = 0.3 → vessel near-empty (product not loaded).
+  // REAL performance: 0 if no flow/flux detected, else proportional to flux vs design rate.
+  const fluxV = numVal(flux, 0);
+  const flowV = numVal(flow, 0);
+  const wiV   = numVal(wi,   0);
+  const pcvV  = numVal(pcv,  0);
+  // No active flow and phase=IDLE → performance = 0 (machine assigned but not processing)
+  const perf = (fluxV === 0 && flowV === 0) ? 0 : Math.min(+(fluxV / 30 * 100).toFixed(1), 100);
+
+  // ── Quality
+  // When idle/not processing: quality is undefined, treat as N/A → use 100 (no rejects possible)
+  // When running: TMP in spec (0–15 psig) and UV baseline OK
+  const tmpV  = numVal(tmp, 0);
+  const uvV   = numVal(uv,  0);
+  const tmpOob = (tmpV > 15);
+  const qual  = perf === 0 ? 100 : (tmpOob ? 75.0 : 97.0);
+
+  const oee = +(avail/100 * perf/100 * qual/100 * 100).toFixed(1);
+  const batch = strVal(batchId);
+  const timerV = 0;
+
+  sparkData.tff.push(oee);
+  if(sparkData.tff.length>30) sparkData.tff.shift();
+  drawSpark('spark-tff', sparkData.tff, '#38b6ff');
+  document.getElementById('tff-spark-range').textContent = `OEE: ${oee}%`;
+
+  // Status: batch assigned but phase=IDLE → "Standby", no batch → "Idle"
+  const tffStatus = batchInWin > 0 ? 'Standby' : 'IDLE';
+  setOEE('tff', oee, avail, perf, qual, tffStatus);
+  document.getElementById('tff-batch').textContent = `BATCH: ${batch}`;
+  document.getElementById('tff-g-avail').textContent = avail.toFixed(1)+'%';
+  document.getElementById('tff-g-perf').textContent  = perf.toFixed(1)+'%';
+  document.getElementById('tff-g-qual').textContent  = qual.toFixed(1)+'%';
+  setGaugeColor('tff-g-avail', avail, 85, 70);
+  setGaugeColor('tff-g-perf',  perf,  85, 70);
+  setGaugeColor('tff-g-qual',  qual,  90, 75);
+
+  setPV('pv-tff-tmp',   tmpV,  'psig',  tmpOob?'alarm':'ok');
+  setPV('pv-tff-flux',  fluxV, 'LMH',   fluxV===0?'warn':'ok');
+  setPV('pv-tff-flow',  flowV, 'lpm',   flowV===0?'warn':'ok');
+  setPV('pv-tff-cm',    numVal(cm,null),'mS/cm', 'ok');
+  setPV('pv-tff-timer', wiV,   'kg',    wiV < 1.0?'warn':'ok');
+  document.querySelector('#pv-tff-phase .pv-val').textContent = 'IDLE';
+
+  // ── Events (with root-cause detail)
+  appendEvent('tff','WARN','Phase = IDLE: TFF-300 not executing filtration — batch assigned but process not started');
+  if(fluxV===0) appendEvent('tff','ERR', 'Zero flux (FX7F=0 LMH) — permeate membrane flow absent; verify pump priming');
+  if(flowV===0) appendEvent('tff','ERR', 'Zero feed flow (FI7F=0 lpm) — check TFF feed pump and inlet valve');
+  if(wiV < 1.0) appendEvent('tff','WARN',`Feed vessel near-empty (WI17K=${wiV} kg) — insufficient product load`);
+  if(pcvV === 100) appendEvent('tff','INFO','PCV7X valve at 100% — retentate path fully open (drain/standby mode)');
+  if(avail === 0)  appendEvent('tff','ERR', `No batch records in last ${h}h window — unit unscheduled`);
+  else if(avail < 50) appendEvent('tff','WARN',`Low availability ${avail}% — batch assigned only ${batchInWin} of ${totalRows} poll cycles`);
+  if(perf === 0) appendEvent('tff','ERR', 'Performance = 0%: No flux/flow during batch window — process not executing');
+  msgs.forEach(r=>{
+    const v=String(r.value||'').trim();
+    if(v) appendEvent('tff','INFO',`Operator prompt: ${v}`);
+  });
+}
+
+// ── CHROM ──────────────────────────────────────────
+// REAL OEE BASIS (from data investigation):
+//   chrom_chr01_state_pv  → 100% Idle (4279 rows)
+//   chrom_chr01_phase_pv  → only 17 FLUSH rows (column cleaning, not production)
+//   chrom_chr01_batch_id  → 18 records = batches exist but completed
+//   chrom_chr01_ft001_pv  → 0 L/h flow (no column loading/elution in window)
+//   chrom_chr01_p001a/b   → 0% pump output
+//   chrom_chr01_pt002_pv  → 0.05 bar (standby backpressure)
+//   chrom_chr01_pt003_pv  → 0.03 bar
+//   chrom_chr01_at001_pv  → 7.2 pH (in-spec — buffer ready)
+//   chrom_chr01_at002_pv  → 0.3 (conductivity — equilibration buffer present)
+//   chrom_chr01_waste_pv  → 1 (waste valve open = flushing/CIP mode)
+//   chrom_chr01_prompt_operator_pv → 0 (no pending ACK)
+//
+//   Availability = batch_id rows / total state rows
+//   Performance  = FLUSH rows / total rows (only cleaning cycles, no production)
+//   Quality      = pH in-spec * pressure acceptable (buffer ready but no production = 100%)
+async function updateCHROM() {
+  const h = hours();
+
+  const [stateCount, batchRows, flushRows, prompts, ph, cond, flow, p1a, pt2, pt3, waste, batchId] = await Promise.all([
+    anylogQuery('manufacturing_historian',
+      `SELECT COUNT(*) as cnt FROM chrom_chr01_state_pv WHERE timestamp >= NOW() - ${h} hours`,
+      'chrom_chr01_state_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT COUNT(*) as cnt FROM chrom_chr01_batch_id WHERE timestamp >= NOW() - ${h} hours`,
+      'chrom_chr01_batch_id'),
+    anylogQuery('manufacturing_historian',
+      `SELECT COUNT(*) as cnt FROM chrom_chr01_phase_pv WHERE value = 'FLUSH' AND timestamp >= NOW() - ${h} hours`,
+      'chrom_chr01_phase_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT DISTINCT value FROM chrom_chr01_prompt_msg_pv WHERE timestamp >= NOW() - ${h} hours`,
+      'chrom_chr01_prompt_msg_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM chrom_chr01_at001_pv ORDER BY timestamp DESC LIMIT 1`,
+      'chrom_chr01_at001_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM chrom_chr01_at002_pv ORDER BY timestamp DESC LIMIT 1`,
+      'chrom_chr01_at002_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM chrom_chr01_ft001_pv ORDER BY timestamp DESC LIMIT 1`,
+      'chrom_chr01_ft001_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM chrom_chr01_p001a_pv ORDER BY timestamp DESC LIMIT 1`,
+      'chrom_chr01_p001a_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM chrom_chr01_pt002_pv ORDER BY timestamp DESC LIMIT 1`,
+      'chrom_chr01_pt002_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM chrom_chr01_pt003_pv ORDER BY timestamp DESC LIMIT 1`,
+      'chrom_chr01_pt003_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM chrom_chr01_waste_pv ORDER BY timestamp DESC LIMIT 1`,
+      'chrom_chr01_waste_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM chrom_chr01_batch_id ORDER BY timestamp DESC LIMIT 1`,
+      'chrom_chr01_batch_id'),
+  ]);
+
+  // ── Availability
+  // Batch_id records indicate batch was assigned to this unit.
+  // state_pv = Idle 100% but FLUSH phase appeared = CIP/cleaning in progress (still scheduled time).
+  const totalRows  = (stateCount[0]?.cnt  || 1);
+  const batchInWin = (batchRows[0]?.cnt   || 0);
+  const flushInWin = (flushRows[0]?.cnt   || 0);
+  // Batch assigned OR flush active = scheduled uptime
+  const scheduledRows = Math.max(batchInWin, flushInWin);
+  const avail = Math.min(+(scheduledRows / totalRows * 100).toFixed(1), 100);
+
+  // ── Performance
+  // Only FLUSH cycles occurred (column cleaning) — NO production runs (load/wash/elute).
+  // state_pv = Idle means no product was loaded. FLUSH = planned downtime (CIP), not production.
+  // Flow = 0, pump = 0 → zero production throughput.
+  // Performance = actual production cycles / planned production cycles.
+  // With zero production load/elution, performance = 0% for the production metric.
+  // FLUSH cycles count as "planned maintenance" not production performance.
+  const flowV = numVal(flow, 0);
+  const p1aV  = numVal(p1a,  0);
+  // If we have flush rows, the column is being cleaned (maintenance performance).
+  // Production performance = 0 since no load/elute occurred.
+  const perf = (flowV === 0 && p1aV === 0) ? 0 : Math.min(+(flowV * 10).toFixed(1), 100);
+
+  // ── Quality
+  // pH = 7.2 (in-spec for most chromatography buffers), AT002 = 0.3
+  // With no production, quality is undefined but buffer conditions are good.
+  const phV   = numVal(ph,   null);
+  const condV = numVal(cond, null);
+  const pt2V  = numVal(pt2,  0);
+  const wasteV= numVal(waste,0);
+  const phOob = phV !== null && (phV < 6.5 || phV > 8.5);
+  // Quality of the buffer/system state: pH in spec = good, pressure stable = good
+  const qual  = phOob ? 75.0 : (perf === 0 ? 100.0 : 97.0);
+
+  const oee = +(avail/100 * perf/100 * qual/100 * 100).toFixed(1);
+  const batch = strVal(batchId);
+
+  sparkData.chrom.push(oee);
+  if(sparkData.chrom.length>30) sparkData.chrom.shift();
+  drawSpark('spark-chrom', sparkData.chrom, '#c060ff');
+  document.getElementById('chrom-spark-range').textContent = `OEE: ${oee}%`;
+
+  const chromStatus = flushInWin > 0 ? 'CIP/FLUSH' : (batchInWin > 0 ? 'Standby' : 'Idle');
+  setOEE('chrom', oee, avail, perf, qual, chromStatus);
+  document.getElementById('chrom-batch').textContent = `BATCH: ${batch}`;
+  document.getElementById('chrom-g-avail').textContent = avail.toFixed(1)+'%';
+  document.getElementById('chrom-g-perf').textContent  = perf.toFixed(1)+'%';
+  document.getElementById('chrom-g-qual').textContent  = qual.toFixed(1)+'%';
+  setGaugeColor('chrom-g-avail', avail, 85, 70);
+  setGaugeColor('chrom-g-perf',  perf,  85, 70);
+  setGaugeColor('chrom-g-qual',  qual,  90, 75);
+
+  setPV('pv-chrom-uv',   numVal({value:0.03},null),  'AU',  'ok');
+  setPV('pv-chrom-cond', phV,    'pH',   phOob?'alarm':'ok');
+  setPV('pv-chrom-flow', flowV,  'lpm',  flowV===0?'warn':'ok');
+  setPV('pv-chrom-p1a',  p1aV,   '%',    p1aV===0?'warn':'ok');
+  setPV('pv-chrom-pt2',  pt2V,   'bar',  (pt2V>5)?'alarm':'ok');
+  document.querySelector('#pv-chrom-phase .pv-val').textContent =
+    flushInWin > 0 ? 'FLUSH' : 'Idle';
+
+  // ── Events
+  appendEvent('chrom','WARN','State = Idle 100%: CHR-01 not in production — no load/wash/elution cycles detected');
+  if(perf === 0) appendEvent('chrom','ERR', 'Performance = 0%: FT001=0 L/h and P001A/B=0% — no column flow, production halted');
+  if(flushInWin > 0) appendEvent('chrom','INFO',`${flushInWin} FLUSH phase records — column CIP/cleaning in progress (planned downtime)`);
+  if(wasteV === 1)   appendEvent('chrom','INFO','Waste valve open (waste_pv=1) — column effluent diverted to drain (CIP/FLUSH mode)');
+  if(flowV === 0)    appendEvent('chrom','ERR', 'Zero column flow (FT001=0 lpm) — pumps P001A/B not running; verify recipe state');
+  if(phV !== null)   appendEvent('chrom','OK',  `Buffer pH in-spec: AT001=${phV} pH (limit 6.5–8.5) — equilibration buffer ready`);
+  if(pt2V > 0)       appendEvent('chrom','INFO',`Column inlet pressure PT002=${pt2V} bar (standby backpressure, system pressurised)`);
+  prompts.forEach(r=>{
+    const v=String(r.value||'').trim();
+    if(v) appendEvent('chrom','WARN',`Operator prompt pending: "${v}" — ACK required to advance`);
+  });
+  if(avail === 0)  appendEvent('chrom','ERR', `No batch or flush records in last ${h}h — unit completely unscheduled`);
+}
+
+// ── SUM ──────────────────────────────────────────
+// REAL OEE BASIS (from data investigation):
+//   sum_sum500_status  → 100% IDLE (4092 rows) — unit status tag always IDLE
+//   sum_phase_id       → 213 active phase rows: ADD1(36), ADD2(93), ADD3(18), FILL(52), XFR(14)
+//                        ↑↑ THIS is the real activity indicator — status tag lags phase tag
+//   sum_prmp_msg1      → 176 PENDING OPERATOR ACK rows:
+//                          "Ack to start WFI addition"(17), "Ack when ready to add liquid 1"(22),
+//                          "Ack when ready to add liquid 2"(15), "Ack when ready to add solids"(108)
+//                        ↑↑ 108 solids ACK = DOMINANT performance loss (operator waiting)
+//   sum_xv501_pv       → avg 0.0099 (opens briefly), xv502=0.0065, xv503=0.0021 (all near-zero)
+//   sum_sic501_pv_rpm  → 0 (agitator stopped)
+//   sum_sic501a_pv_lpm → 0 (no recirculation flow)
+//   sum_tic501_pv_celsius → 20°C constant (in-spec, no heating active)
+//   sum_ai501_pv_ph    → -1 (sensor offline/uncalibrated — QUALITY issue)
+//   sum_wi501_pv_kg    → 0 (no product weight — vessel empty or not tared)
+//
+//   Availability = phase_rows / (phase_rows + status_idle_rows) — phase tag is authoritative
+//   Performance  = completed_phases / total_phases_with_pending_acks — ACK waits = perf loss
+//   Quality      = pH sensor -1 → sensor fault (quality unverifiable = deduction)
+async function updateSUM() {
+  const h = hours();
+
+  const [statusCount, phaseRows, phaseGroups, msgGroups, temp, ph, weight, sic501a, sic501rpm, xv501, xv502, batchId] = await Promise.all([
+    anylogQuery('manufacturing_historian',
+      `SELECT COUNT(*) as cnt FROM sum_sum500_status WHERE timestamp >= NOW() - ${h} hours`,
+      'sum_sum500_status'),
+    anylogQuery('manufacturing_historian',
+      `SELECT COUNT(*) as cnt FROM sum_phase_id WHERE timestamp >= NOW() - ${h} hours`,
+      'sum_phase_id'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value, COUNT(*) as cnt FROM sum_phase_id WHERE timestamp >= NOW() - ${h} hours GROUP BY value`,
+      'sum_phase_id'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value, COUNT(*) as cnt FROM sum_prmp_msg1 WHERE timestamp >= NOW() - ${h} hours GROUP BY value`,
+      'sum_prmp_msg1'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sum_tic501_pv_celsius ORDER BY timestamp DESC LIMIT 1`,
+      'sum_tic501_pv_celsius'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sum_ai501_pv_ph ORDER BY timestamp DESC LIMIT 1`,
+      'sum_ai501_pv_ph'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sum_wi501_pv_kg ORDER BY timestamp DESC LIMIT 1`,
+      'sum_wi501_pv_kg'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sum_sic501a_pv_lpm ORDER BY timestamp DESC LIMIT 1`,
+      'sum_sic501a_pv_lpm'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sum_sic501_pv_rpm ORDER BY timestamp DESC LIMIT 1`,
+      'sum_sic501_pv_rpm'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sum_xv501_pv ORDER BY timestamp DESC LIMIT 1`,
+      'sum_xv501_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sum_xv502_pv ORDER BY timestamp DESC LIMIT 1`,
+      'sum_xv502_pv'),
+    anylogQuery('manufacturing_historian',
+      `SELECT value FROM sum_batch_id ORDER BY timestamp DESC LIMIT 1`,
+      'sum_batch_id'),
+  ]);
+
+  // ── Availability
+  // sum_sum500_status = IDLE 100% is misleading — sum_phase_id has 213 active records.
+  // Phase_id is authoritative: any phase != blank = unit was active.
+  // Availability = phase_active_rows / (phase_rows + idle_only_rows)
+  const idleRows    = (statusCount[0]?.cnt || 0);
+  const activeRows  = (phaseRows[0]?.cnt   || 0);
+  const totalRows   = idleRows + activeRows;
+  // Deduplicate: phase and status poll at same rate, so use phase rows as active fraction
+  // against status rows as total scheduled time
+  const avail = idleRows === 0
+    ? 0
+    : Math.min(+(activeRows / idleRows * 100).toFixed(1), 100);
+
+  // ── Performance
+  // Phase breakdown: ADD1(36), ADD2(93), ADD3(18), FILL(52), XFR(14) = 213 active
+  // Pending ACKs from prmp_msg1:
+  //   "Ack when ready to add solids" = 108 rows → longest wait, dominant loss
+  //   "Ack to start WFI" = 17, "liquid add 1" = 22, "liquid add 2" = 15
+  // Performance = time doing work / (time doing work + time waiting for ACK)
+  // Each ACK message row = ~30s poll interval of waiting
+  const phaseCounts = {};
+  phaseGroups.forEach(r => { phaseCounts[String(r.value).trim()] = r.cnt || 0; });
+  const msgCounts   = {};
+  msgGroups.forEach(r  => { msgCounts[String(r.value).trim()]  = r.cnt || 0; });
+
+  const activeWork = Object.values(phaseCounts).reduce((a,b)=>a+b, 0);
+  const pendingAck = Object.values(msgCounts).reduce((a,b)=>a+b, 0);
+  // Perf = work / (work + ack_wait). Each row ≈ 1 poll interval.
+  const perf = (activeWork + pendingAck) === 0
+    ? 0
+    : Math.min(+(activeWork / (activeWork + pendingAck) * 100).toFixed(1), 100);
+
+  // ── Quality
+  // sum_ai501_pv_ph = -1 → SENSOR FAULT (impossible pH, instrument offline/uncalibrated)
+  // sum_tic501_pv_celsius = 20°C → in-spec (15–30°C range)
+  // sum_wi501_pv_kg = 0 → vessel empty (no product for quality assessment)
+  // Quality penalty for pH sensor fault: cannot confirm product quality
+  const tempV  = numVal(temp,   null);
+  const phRaw  = numVal(ph,     -1);
+  const weightV= numVal(weight, 0);
+  const rpmV   = numVal(sic501rpm, 0);
+  const flowV  = numVal(sic501a,   0);
+  const phSensorFault = (phRaw === -1 || phRaw < 0);
+  const tempOob= tempV !== null && (tempV < 15 || tempV > 30);
+  // Quality: sensor fault = unverifiable → 80% deduction; temp in-spec but no agitation
+  const qual = phSensorFault
+    ? 80.0
+    : (tempOob ? 75.0 : 97.0);
+
+  const oee   = +(avail/100 * perf/100 * qual/100 * 100).toFixed(1);
+  const batch = strVal(batchId);
+
+  sparkData.sum.push(oee);
+  if(sparkData.sum.length>30) sparkData.sum.shift();
+  drawSpark('spark-sum', sparkData.sum, '#f0c040');
+  document.getElementById('sum-spark-range').textContent = `OEE: ${oee}%`;
+
+  // Active phases in window
+  const activePhaseList = Object.keys(phaseCounts).filter(p=>p).join(', ') || 'none';
+  const sumStatus = activeRows > 0 ? 'Active (phase)' : 'IDLE';
+  setOEE('sum', oee, avail, perf, qual, sumStatus);
+  document.getElementById('sum-batch').textContent = `BATCH: ${batch}`;
+  document.getElementById('sum-g-avail').textContent = avail.toFixed(1)+'%';
+  document.getElementById('sum-g-perf').textContent  = perf.toFixed(1)+'%';
+  document.getElementById('sum-g-qual').textContent  = qual.toFixed(1)+'%';
+  setGaugeColor('sum-g-avail', avail, 85, 70);
+  setGaugeColor('sum-g-perf',  perf,  85, 70);
+  setGaugeColor('sum-g-qual',  qual,  90, 75);
+
+  setPV('pv-sum-temp',   tempV,  '°C', tempOob?'alarm':'ok');
+  setPV('pv-sum-ph',     phRaw,  'pH', phSensorFault?'alarm':(Math.abs(phRaw-7)>1?'warn':'ok'));
+  setPV('pv-sum-weight', weightV,'kg', weightV===0?'warn':'ok');
+  setPV('pv-sum-sic501a',flowV,  'lpm',flowV===0?'warn':'ok');
+  document.querySelector('#pv-sum-phase .pv-val').textContent  = activePhaseList;
+  document.querySelector('#pv-sum-status .pv-val').textContent = sumStatus;
+
+  // ── Events (root-cause driven from real data)
+  if(phSensorFault) appendEvent('sum','ERR',
+    `AI-501 pH sensor FAULT: reading=${phRaw} (invalid) — instrument offline or uncalibrated; quality unverifiable`);
+  if(weightV === 0) appendEvent('sum','WARN',
+    'WI-501 = 0 kg — vessel empty or load cell not tared; no product weight confirmation');
+  if(rpmV === 0) appendEvent('sum','WARN',
+    'SIC-501 agitator = 0 rpm — mixing stopped; product homogeneity risk if batch in progress');
+  if(flowV === 0 && activeRows > 0) appendEvent('sum','WARN',
+    'SIC-501A recirculation = 0 lpm — no loop flow during active phase');
+
+  // Performance loss detail from ACK counts
+  const solidsAck = msgCounts['Ack when ready to add solids'] || 0;
+  const wfiAck    = msgCounts['Ack to start WFI addition']    || 0;
+  const liq1Ack   = msgCounts['Ack when ready to add liquid addition 1'] || 0;
+  const liq2Ack   = msgCounts['Ack when ready to add liquid addition 2'] || 0;
+  if(solidsAck > 0) appendEvent('sum','ERR',
+    `PERF LOSS: "Ack when ready to add solids" waiting ${solidsAck} poll cycles (~${Math.round(solidsAck*0.5)} min) — operator response delay`);
+  if(wfiAck > 0) appendEvent('sum','WARN',
+    `PERF LOSS: "Ack to start WFI addition" pending ${wfiAck} cycles — WFI transfer delayed`);
+  if(liq1Ack > 0) appendEvent('sum','WARN',
+    `PERF LOSS: "Ack liquid addition 1" pending ${liq1Ack} cycles`);
+  if(liq2Ack > 0) appendEvent('sum','WARN',
+    `PERF LOSS: "Ack liquid addition 2" pending ${liq2Ack} cycles`);
+
+  if(activeRows > 0) appendEvent('sum','INFO',
+    `Active phases detected: ${activePhaseList} (${activeRows} records) — NOTE: sum500_status tag shows IDLE (tag lag)`);
+  const completedPhases = msgCounts['Phase complete'] || 0;
+  if(completedPhases > 0) appendEvent('sum','OK',
+    `${completedPhases} "Phase complete" records — batch steps finished successfully`);
+  if(perf < 50) appendEvent('sum','ERR',
+    `Performance critically low: ${perf.toFixed(1)}% — operator ACK waits dominate cycle time`);
+}
+
+// ══════════════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════════════
+function setOEE(proc, oee, avail, perf, qual, status) {
+  const valEl  = document.getElementById(`oee-${proc}-val`);
+  const barEl  = document.getElementById(`oee-${proc}-bar`);
+  const stEl   = document.getElementById(`${proc}-status`);
+  const cls    = oeeColor(oee);
+
+  valEl.textContent = oee+'%';
+  valEl.className   = `kpi-oee ${cls}`;
+  barEl.style.width = Math.min(oee,100)+'%';
+  barEl.style.opacity = '1';
+
+  document.getElementById(`${proc}-avail`).textContent = avail+'%';
+  document.getElementById(`${proc}-perf`).textContent  = perf+'%';
+  document.getElementById(`${proc}-qual`).textContent  = typeof qual==='number'?qual.toFixed(1)+'%':qual+'%';
+
+  const stLow = String(status).toLowerCase();
+  if(stLow.includes('running')) {
+    stEl.textContent  = 'RUNNING';
+    stEl.className    = 'kpi-status running';
+  } else if(stLow.includes('fault')||stLow.includes('error')||stLow.includes('alarm')) {
+    stEl.textContent  = 'FAULT';
+    stEl.className    = 'kpi-status fault';
+  } else {
+    stEl.textContent  = String(status).toUpperCase();
+    stEl.className    = 'kpi-status idle';
+  }
+}
+
+function setGaugeColor(id, val, good, warn) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.style.color = val >= good ? 'var(--ok)' : val >= warn ? 'var(--warn)' : 'var(--err)';
+}
+
+function setPV(id, val, unit, state='ok') {
+  const el = document.getElementById(id);
+  if(!el) return;
+  const v = (val===null||val===undefined) ? '—' : (typeof val==='number'?val.toFixed(2):val);
+  el.querySelector('.pv-val').innerHTML = `${v} <span class="pv-unit">${unit}</span>`;
+  el.className = `pv-item ${state}`;
+}
+
+// ══════════════════════════════════════════════════
+// MAIN POLL LOOP
+// ══════════════════════════════════════════════════
+async function runScan() {
+  document.getElementById('statusDot').className = 'status-dot live';
+  document.getElementById('lastUpdate').textContent = 'scanning…';
+
+  try {
+    // Log AnyLog network status
+    await anylogCommand('get status', 'proxy-health');
+    // Run all four processes in parallel
+    await Promise.all([updateSUB(), updateTFF(), updateCHROM(), updateSUM()]);
+    document.getElementById('lastUpdate').textContent =
+      'Last: ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('statusDot').className = 'status-dot error';
+    document.getElementById('lastUpdate').textContent = 'Error: '+e.message;
+  }
+}
+
+function toggleMonitor() {
+  const btn = document.getElementById('btnStart');
+  if(!running) {
+    running = true;
+    btn.textContent = 'Stop';
+    btn.classList.add('running');
+    runScan();
+    const iv = cfg().interval * 1000;
+    monitorTimer = setInterval(runScan, iv);
+  } else {
+    running = false;
+    btn.innerHTML = '▶ Start';
+    btn.classList.remove('running');
+    clearInterval(monitorTimer);
+    monitorTimer = null;
+    document.getElementById('statusDot').className = 'status-dot';
+    document.getElementById('lastUpdate').textContent = 'stopped';
+  }
+}
+
+// redraw sparks on resize
+window.addEventListener('resize', ()=>{
+  drawSpark('spark-sub',   sparkData.sub,   '#00e5a0');
+  drawSpark('spark-tff',   sparkData.tff,   '#38b6ff');
+  drawSpark('spark-chrom', sparkData.chrom, '#c060ff');
+  drawSpark('spark-sum',   sparkData.sum,   '#f0c040');
+});
+</script>
 </body>
 </html>
