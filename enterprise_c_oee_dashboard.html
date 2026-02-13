@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise C - Real-Time OEE Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+            color: #ecf0f1;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .dashboard-container { max-width: 2000px; margin: 0 auto; }
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid #3498db;
+        }
+        .header-left h1 { font-size: 28px; color: #3498db; margin-bottom: 5px; }
+        .subtitle { font-size: 14px; color: #95a5a6; }
+        .header-controls { display: flex; gap: 20px; align-items: center; }
+        .control-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 5px;
+            color: #ecf0f1;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .control-btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+        .control-btn.paused { background: #e67e22; }
+        .status-indicator { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #2ecc71;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .config-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .config-section { display: flex; flex-direction: column; gap: 5px; }
+        .config-section label { font-size: 12px; color: #95a5a6; font-weight: 600; }
+        .config-section input {
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #ecf0f1;
+            font-size: 14px;
+            width: 150px;
+        }
+        .config-section input:focus { outline: none; border-color: #3498db; }
+        .apply-btn { background: #27ae60 !important; }
+        .test-btn { background: #3498db !important; }
+        .discover-btn { background: #9b59b6 !important; }
+        .process-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .process-tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 5px;
+            color: #ecf0f1;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .process-tab:hover { background: rgba(255, 255, 255, 0.2); }
+        .process-tab.active { background: #3498db; }
+        .oee-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .oee-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border-left: 5px solid #3498db;
+            transition: all 0.3s;
+        }
+        .oee-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); }
+        .oee-card.availability { border-left-color: #2ecc71; }
+        .oee-card.performance { border-left-color: #f39c12; }
+        .oee-card.quality { border-left-color: #9b59b6; }
+        .oee-card h3 {
+            font-size: 14px;
+            color: #95a5a6;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .oee-value { font-size: 48px; font-weight: bold; color: #ecf0f1; margin-bottom: 5px; }
+        .oee-label { font-size: 16px; color: #95a5a6; }
+        .oee-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .oee-status.excellent { background: #27ae60; }
+        .oee-status.good { background: #2ecc71; }
+        .oee-status.fair { background: #f39c12; }
+        .oee-status.poor { background: #e74c3c; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        .metric-card h4 { font-size: 12px; color: #95a5a6; margin-bottom: 8px; }
+        .metric-value { font-size: 24px; font-weight: bold; color: #3498db; }
+        .metric-unit { font-size: 12px; color: #95a5a6; margin-left: 5px; }
+        .log-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .log-header {
+            font-size: 16px;
+            color: #3498db;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .clear-log-btn {
+            background: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .log-content {
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        .log-entry {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #2ecc71;
+        }
+        .log-entry.error { border-left-color: #e74c3c; }
+        .log-timestamp { color: #95a5a6; font-size: 10px; margin-bottom: 5px; }
+        .process-section { display: none; }
+        .process-section.active { display: block; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(52, 152, 219, 0.5); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="header-left">
+                <h1>📊 Enterprise C - Real-Time OEE Dashboard</h1>
+                <div class="subtitle">Overall Equipment Effectiveness | TFF · SUB · CHROM · SUM | Powered by UNS via dynics-anylog MCP</div>
+            </div>
+            <div class="header-controls">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Live</span>
+                </div>
+                <div class="status-indicator">
+                    Interval: <span id="intervalDisplay">30</span>s
+                </div>
+                <button class="control-btn" onclick="togglePause()" id="pauseBtn">
+                    <span id="pauseIcon">⏸</span>
+                    <span id="pauseText">Pause</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="config-panel">
+            <div class="config-section">
+                <label for="proxyHost">REST Proxy Host:</label>
+                <input type="text" id="proxyHost" value="localhost" placeholder="localhost or IP">
+            </div>
+            <div class="config-section">
+                <label for="proxyPort">REST Proxy Port:</label>
+                <input type="number" id="proxyPort" value="5001" placeholder="5001">
+            </div>
+            <div class="config-section">
+                <label for="refreshInterval">Refresh Interval (sec):</label>
+                <input type="number" id="refreshInterval" value="30" min="5" max="300" step="5">
+            </div>
+            <div class="config-section">
+                <label for="dataWindow">Data Window (hours):</label>
+                <input type="number" id="dataWindow" value="8" min="1" max="24" step="1">
+            </div>
+            <button class="control-btn apply-btn" onclick="applyConfig()">Apply Settings</button>
+            <button class="control-btn test-btn" onclick="testConnection()">Test Connection</button>
+            <button class="control-btn discover-btn" onclick="discoverUNS()">Discover UNS</button>
+        </div>
+
+        <div class="process-tabs">
+            <button class="process-tab active" onclick="showProcess('all')">📊 All Processes</button>
+            <button class="process-tab" onclick="showProcess('tff')">🧪 TFF</button>
+            <button class="process-tab" onclick="showProcess('sub')">🧬 SUB</button>
+            <button class="process-tab" onclick="showProcess('chrom')">🔬 CHROM</button>
+            <button class="process-tab" onclick="showProcess('sum')">⚗️ SUM</button>
+        </div>
+
+        <div id="allProcess" class="process-section active">
+            <div class="oee-summary" id="oeeSummaryAll"></div>
+            <div class="metrics-grid" id="metricsAll"></div>
+        </div>
+
+        <div id="tffProcess" class="process-section">
+            <div class="oee-summary" id="oeeSummaryTFF"></div>
+            <div class="metrics-grid" id="metricsTFF"></div>
+        </div>
+
+        <div id="subProcess" class="process-section">
+            <div class="oee-summary" id="oeeSummarySUB"></div>
+            <div class="metrics-grid" id="metricsSUB"></div>
+        </div>
+
+        <div id="chromProcess" class="process-section">
+            <div class="oee-summary" id="oeeSummaryCHROM"></div>
+            <div class="metrics-grid" id="metricsCHROM"></div>
+        </div>
+
+        <div id="sumProcess" class="process-section">
+            <div class="oee-summary" id="oeeSummarySUM"></div>
+            <div class="metrics-grid" id="metricsSUM"></div>
+        </div>
+
+        <div class="log-panel">
+            <div class="log-header">
+                <span>📝 System Log (REST API + AnyLog MCP + UNS + Row Counts)</span>
+                <button class="clear-log-btn" onclick="clearLog()">Clear Log</button>
+            </div>
+            <div class="log-content" id="logContent"></div>
+        </div>
+    </div>
+
+    <script>
+// Enterprise C OEE Dashboard - Complete JavaScript
+// Configuration
+let PROXY_URL = 'http://localhost:5001';
+let PROXY_HOST = 'localhost';
+let PROXY_PORT = 5001;
+const DBMS = 'manufacturing_historian';
+let REFRESH_INTERVAL = 30000;
+let DATA_WINDOW_HOURS = 8;
+const MCP_SERVER = 'dynics-anylog';
+
+// State
+let isPaused = false;
+let refreshTimer = null;
+let systemLog = [];
+let currentProcess = 'all';
+
+// Process configurations with OEE calculation parameters
+let processConfig = {
+    tff: {
+        name: 'TFF (Tangential Flow Filtration)',
+        units: ['tff01'],
+        // TFF state: try tff_tff01_state first; auto-discover via discoverUNS()
+        // No confirmed tff_ tables in DB — state discovered at runtime
+        state: null,   // populated by discoverUNS() if tff tables exist
+        downtimeStates: ['fault', 'error', 'alarm', 'offline', 'maintenance'],
+        batch: null,
+        // TFF performance: count distinct non-idle values in chrom phase as proxy
+        // or use any discovered tff table. idealCycleTime = 4 hours per TFF run
+        production: null,  // populated by discoverUNS() if tff tables exist
+        oee: { availability: 0, performance: 0, quality: 0, overall: 0 },
+        metrics: {
+            plannedProductionTime: 0,
+            actualRuntime: 0,
+            downtime: 0,
+            idealCycleTime: 240,  // 4 hours per TFF run (in minutes)
+            totalUnits: 0,
+            goodUnits: 0,
+            rejectedUnits: 0,
+            stateBreakdown: {}
+        }
+    },
+    sub: {
+        name: 'SUB (Seed/Upstream Bioreactor)',
+        units: ['250'],
+        state: 'sub_unit_250_state',
+        // Confirmed values from DB: "Running", "Idle   " (with trailing spaces)
+        // Running = available; Idle = available but not producing; Fault/Error = downtime
+        downtimeStates: ['fault', 'error', 'alarm', 'abort', 'stopped'],
+        batch: 'sub_unit_250_batch_id',
+        production: 'sub_unit_250_phase',   // sub_unit_250_phase exists in DB
+        oee: { availability: 0, performance: 0, quality: 0, overall: 0 },
+        metrics: {
+            plannedProductionTime: 0,
+            actualRuntime: 0,
+            downtime: 0,
+            // SUB bioreactor: each phase (inoculation, growth, feed, harvest) = 12-24h
+            // Use 720 min (12 hours) per phase transition as ideal cycle
+            idealCycleTime: 720,
+            totalUnits: 0,
+            goodUnits: 0,
+            rejectedUnits: 0,
+            stateBreakdown: {}
+        }
+    },
+    chrom: {
+        name: 'CHROM (Chromatography)',
+        units: ['chr01'],
+        state: 'chrom_chr01_state_pv',
+        // Confirmed values from DB: "Idle" only in last 7 days
+        downtimeStates: ['fault', 'error', 'alarm', 'abort'],
+        batch: 'chrom_chr01_batch_id',
+        // chrom_chr01_phase_pv confirmed in DB — values include "FLUSH"
+        // Count distinct phase changes as column cycles
+        production: 'chrom_chr01_phase_pv',
+        oee: { availability: 0, performance: 0, quality: 0, overall: 0 },
+        metrics: {
+            plannedProductionTime: 0,
+            actualRuntime: 0,
+            downtime: 0,
+            // Chromatography: realistic cycle = 60-180 min. Use 90 min per run.
+            // Ideal count per 8h shift = ~5 runs
+            idealCycleTime: 90,
+            totalUnits: 0,
+            goodUnits: 0,
+            rejectedUnits: 0,
+            stateBreakdown: {}
+        }
+    },
+    sum: {
+        name: 'SUM (Downstream Processing)',
+        units: ['500'],
+        state: 'sum_sum500_status',
+        // Confirmed values from DB: "IDLE" only in last 7 days
+        downtimeStates: ['fault', 'error', 'alarm', 'abort'],
+        batch: 'sum_batch_id',
+        // sum_phase_id confirmed in DB
+        production: 'sum_phase_id',
+        oee: { availability: 0, performance: 0, quality: 0, overall: 0 },
+        metrics: {
+            plannedProductionTime: 0,
+            actualRuntime: 0,
+            downtime: 0,
+            // Downstream processing (UF/DF, viral inactivation, etc.):
+            // typical step = 2-4 hours. Use 120 min per phase step.
+            idealCycleTime: 120,
+            totalUnits: 0,
+            goodUnits: 0,
+            rejectedUnits: 0,
+            stateBreakdown: {}
+        }
+    }
+};
+
+// Initialize
+async function init() {
+    console.log('Initializing Enterprise C OEE Dashboard...');
+    logMessage('INFO', '🚀 Dashboard initialization started');
+    
+    loadConfig();
+    createOEECards();
+    createMetricsCards();
+    
+    await discoverUNS();
+    
+    if (!isPaused) {
+        startRefresh();
+    }
+}
+
+// Load configuration
+function loadConfig() {
+    const savedHost = localStorage.getItem('oee_proxyHost');
+    const savedPort = localStorage.getItem('oee_proxyPort');
+    const savedInterval = localStorage.getItem('oee_refreshInterval');
+    const savedWindow = localStorage.getItem('oee_dataWindow');
+
+    if (savedHost) {
+        PROXY_HOST = savedHost;
+        document.getElementById('proxyHost').value = savedHost;
+    }
+    if (savedPort) {
+        PROXY_PORT = parseInt(savedPort);
+        document.getElementById('proxyPort').value = savedPort;
+    }
+    if (savedInterval) {
+        REFRESH_INTERVAL = parseInt(savedInterval) * 1000;
+        document.getElementById('refreshInterval').value = savedInterval;
+        document.getElementById('intervalDisplay').textContent = savedInterval;
+    }
+    if (savedWindow) {
+        DATA_WINDOW_HOURS = parseInt(savedWindow);
+        document.getElementById('dataWindow').value = savedWindow;
+    }
+
+    PROXY_URL = `http://${PROXY_HOST}:${PROXY_PORT}`;
+}
+
+// Apply configuration
+function applyConfig() {
+    const host = document.getElementById('proxyHost').value.trim();
+    const port = parseInt(document.getElementById('proxyPort').value);
+    const interval = parseInt(document.getElementById('refreshInterval').value);
+    const windowHours = parseInt(document.getElementById('dataWindow').value);
+
+    if (!host || !port || !interval || !windowHours) {
+        alert('Please fill in all configuration fields');
+        return;
+    }
+
+    PROXY_HOST = host;
+    PROXY_PORT = port;
+    REFRESH_INTERVAL = interval * 1000;
+    DATA_WINDOW_HOURS = windowHours;
+    PROXY_URL = `http://${PROXY_HOST}:${PROXY_PORT}`;
+
+    localStorage.setItem('oee_proxyHost', host);
+    localStorage.setItem('oee_proxyPort', port);
+    localStorage.setItem('oee_refreshInterval', interval);
+    localStorage.setItem('oee_dataWindow', windowHours);
+
+    document.getElementById('intervalDisplay').textContent = interval;
+
+    if (!isPaused) {
+        startRefresh();
+    }
+
+    logMessage('INFO', `⚙️ Configuration updated: ${PROXY_URL}, Interval: ${interval}s, Window: ${windowHours}h`);
+    alert('✅ Configuration applied successfully!');
+}
+
+// Test connection
+async function testConnection() {
+    const url = `${PROXY_URL}/health`;
+    
+    const apiDetails = {
+        restAPI: { url: url, method: 'GET', body: null },
+        anylogAPI: {
+            command: 'health check',
+            headers: { 'User-Agent': 'AnyLog/1.23' },
+            mcpConnector: MCP_SERVER
+        }
+    };
+
+    logDetailedQuery('INFO', '🔌 Testing connection to REST proxy...', apiDetails);
+    
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+        const data = await response.json();
+        
+        logDetailedQuery('SUCCESS', `✅ Proxy connection successful!`, {
+            ...apiDetails,
+            response: {
+                rowsReturned: 0,
+                responseSize: JSON.stringify(data).length,
+                responseKeys: Object.keys(data)
+            }
+        });
+        
+        alert(`✅ Connection successful!\n\nService: ${data.service || 'N/A'}\nAnyLog Node: ${data.anylog_node || 'N/A'}`);
+    } catch (error) {
+        logDetailedQuery('ERROR', `❌ Connection failed: ${error.message}`, {
+            ...apiDetails,
+            error: error.message
+        });
+        alert(`❌ Connection failed!\n\n${error.message}`);
+    }
+}
+
+// Discover UNS structure — auto-detects TFF tables and updates config
+async function discoverUNS() {
+    logMessage('INFO', '🔍 Discovering UNS (Unified Namespace) structure...');
+    
+    try {
+        // Query manufacturing_historian for all tables to find TFF-related ones
+        const tablesSql = `SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`;
+        // AnyLog uses: get tables where dbms=manufacturing_historian
+        const url = `${PROXY_URL}/api/query`;
+        const body = { dbms: DBMS, sql: 'get tables where dbms=manufacturing_historian' };
+
+        const apiDetails = {
+            restAPI: { url, method: 'POST', body },
+            anylogAPI: { command: 'get tables where dbms=manufacturing_historian', mcpConnector: MCP_SERVER }
+        };
+
+        logDetailedQuery('INFO', '🔍 Querying tables for UNS discovery...', apiDetails);
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const rows = data.Query || data.rows || data.data || [];
+            const tableNames = Array.isArray(rows) ? rows.map(r => r.name || r.table_name || r[0] || '').filter(Boolean) : [];
+
+            logMessage('INFO', `📋 Discovered ${tableNames.length} tables in manufacturing_historian`);
+
+            // Auto-detect TFF tables
+            const tffTables = tableNames.filter(t => t.toLowerCase().startsWith('tff_'));
+            if (tffTables.length > 0) {
+                logMessage('SUCCESS', `✅ Found ${tffTables.length} TFF tables: ${tffTables.slice(0, 5).join(', ')}`);
+                
+                // Find state/phase tables for TFF
+                const tffState = tffTables.find(t => t.includes('state') || t.includes('status') || t.includes('mode'));
+                const tffPhase = tffTables.find(t => t.includes('phase') || t.includes('step') || t.includes('cycle'));
+
+                if (tffState) {
+                    processConfig.tff.state = tffState;
+                    logMessage('INFO', `🔧 TFF state table auto-configured: ${tffState}`);
+                }
+                if (tffPhase) {
+                    processConfig.tff.production = tffPhase;
+                    logMessage('INFO', `🔧 TFF production table auto-configured: ${tffPhase}`);
+                }
+            } else {
+                logMessage('INFO', '⚠️ No TFF tables found in DB — TFF will use default availability (100%)');
+                logMessage('INFO', '   TFF data may reside in chromatography tables or use different naming.');
+            }
+
+            // Log confirmed tables for each process
+            ['sub', 'chrom', 'sum'].forEach(proc => {
+                const cfg = processConfig[proc];
+                if (cfg.state && tableNames.includes(cfg.state)) {
+                    logMessage('SUCCESS', `✅ ${proc.toUpperCase()} state table confirmed: ${cfg.state}`);
+                } else if (cfg.state) {
+                    logMessage('INFO', `⚠️ ${proc.toUpperCase()} state table not in list: ${cfg.state} (may be on another node)`);
+                }
+            });
+        }
+
+        logMessage('SUCCESS', '✅ UNS structure: TFF · SUB (Unit 250) · CHROM (CHR01) · SUM (Unit 500)');
+        logMessage('INFO', `📊 Ideal cycle times — SUB: 720min/phase | CHROM: 90min/run | SUM: 120min/step | TFF: 240min/run`);
+
+    } catch (error) {
+        logMessage('ERROR', `❌ UNS discovery failed: ${error.message}`);
+        logMessage('INFO', '📋 Falling back to static UNS configuration');
+        logMessage('SUCCESS', '✅ UNS structure loaded: TFF · SUB (Unit 250) · CHROM (CHR01) · SUM (Unit 500)');
+    }
+}
+
+// Create OEE cards
+function createOEECards() {
+    ['All', 'TFF', 'SUB', 'CHROM', 'SUM'].forEach(proc => {
+        const container = document.getElementById(`oeeSummary${proc}`);
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="oee-card">
+                <h3>Overall OEE</h3>
+                <div class="oee-value" id="${proc.toLowerCase()}_oee">--</div>
+                <div class="oee-label">%</div>
+                <div class="oee-status good" id="${proc.toLowerCase()}_status">Calculating...</div>
+            </div>
+            <div class="oee-card availability">
+                <h3>Availability</h3>
+                <div class="oee-value" id="${proc.toLowerCase()}_avail">--</div>
+                <div class="oee-label">%</div>
+            </div>
+            <div class="oee-card performance">
+                <h3>Performance</h3>
+                <div class="oee-value" id="${proc.toLowerCase()}_perf">--</div>
+                <div class="oee-label">%</div>
+            </div>
+            <div class="oee-card quality">
+                <h3>Quality</h3>
+                <div class="oee-value" id="${proc.toLowerCase()}_qual">--</div>
+                <div class="oee-label">%</div>
+            </div>
+        `;
+    });
+}
+
+// Create metrics cards
+function createMetricsCards() {
+    ['All', 'TFF', 'SUB', 'CHROM', 'SUM'].forEach(proc => {
+        const container = document.getElementById(`metrics${proc}`);
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="metric-card">
+                <h4>Runtime</h4>
+                <div class="metric-value" id="${proc.toLowerCase()}_runtime">--</div>
+                <span class="metric-unit">hrs</span>
+            </div>
+            <div class="metric-card">
+                <h4>Downtime</h4>
+                <div class="metric-value" id="${proc.toLowerCase()}_downtime">--</div>
+                <span class="metric-unit">hrs</span>
+            </div>
+            <div class="metric-card">
+                <h4>Production Events</h4>
+                <div class="metric-value" id="${proc.toLowerCase()}_units">--</div>
+                <span class="metric-unit">events</span>
+            </div>
+            <div class="metric-card">
+                <h4>Good</h4>
+                <div class="metric-value" id="${proc.toLowerCase()}_good">--</div>
+                <span class="metric-unit">events</span>
+            </div>
+            <div class="metric-card">
+                <h4>Rejected</h4>
+                <div class="metric-value" id="${proc.toLowerCase()}_rejected">--</div>
+                <span class="metric-unit">events</span>
+            </div>
+            <div class="metric-card" style="grid-column: span 2;">
+                <h4>Equipment States</h4>
+                <div style="font-size: 12px; color: #ecf0f1; margin-top: 4px;" id="${proc.toLowerCase()}_states">--</div>
+            </div>
+        `;
+    });
+}
+
+// Fetch data with detailed logging
+async function fetchData(sql, table) {
+    const url = `${PROXY_URL}/api/query`;
+    const requestBody = { dbms: DBMS, sql: sql };
+
+    const anylogCommand = `sql ${DBMS} ${sql}`;
+    const apiDetails = {
+        restAPI: { url: url, method: 'POST', body: requestBody },
+        anylogAPI: {
+            command: anylogCommand,
+            headers: {
+                'User-Agent': 'AnyLog/1.23',
+                'Content-Type': 'application/json',
+                'command': anylogCommand,
+                'destination': 'network'
+            },
+            mcpConnector: MCP_SERVER
+        },
+        sql: sql
+    };
+
+    logDetailedQuery('QUERY', `📊 Fetching ${table}`, apiDetails);
+
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000);
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal
+        });
+
+        clearTimeout(timeout);
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+        const data = await response.json();
+        const rows = data.Query || data.rows || data.data || data;
+        const rowCount = Array.isArray(rows) ? rows.length : 0;
+        
+        logDetailedQuery('SUCCESS', `✅ Received ${rowCount} rows from ${table}`, {
+            ...apiDetails,
+            response: {
+                rowsReturned: rowCount,
+                responseSize: JSON.stringify(data).length,
+                responseKeys: Object.keys(data)
+            }
+        });
+        
+        return rows;
+    } catch (error) {
+        logDetailedQuery('ERROR', `❌ Failed to fetch ${table}: ${error.message}`, {
+            ...apiDetails,
+            error: error.message
+        });
+        return [];
+    }
+}
+
+// Calculate OEE for a process
+async function calculateOEE(processKey) {
+    const process = processConfig[processKey];
+    if (!process) return;
+
+    logMessage('INFO', `🔢 Calculating OEE for ${process.name}...`);
+
+    // 1. Calculate AVAILABILITY
+    //    Availability = 1 - (downtime / planned time)
+    //    Downtime states are fault/error/alarm — Idle/Running/etc are ALL available
+    if (process.state) {
+        const sql = `SELECT timestamp, value FROM ${process.state} WHERE timestamp >= NOW() - ${DATA_WINDOW_HOURS} hours ORDER BY timestamp DESC LIMIT 2000`;
+        const stateData = await fetchData(sql, process.state);
+
+        if (stateData && stateData.length > 0) {
+            // Build state breakdown — trim whitespace from values
+            const breakdown = {};
+            stateData.forEach(d => {
+                const v = d.value ? d.value.toString().trim() : 'Unknown';
+                breakdown[v] = (breakdown[v] || 0) + 1;
+            });
+            process.metrics.stateBreakdown = breakdown;
+
+            // Downtime = records where state matches a downtime state (case-insensitive)
+            const downtimeRecords = stateData.filter(d => {
+                if (!d.value) return false;
+                const v = d.value.toString().trim().toLowerCase();
+                return process.downtimeStates.some(ds => v.includes(ds));
+            });
+
+            const total = stateData.length;
+            const downtimeRatio = downtimeRecords.length / total;
+            const availRatio = 1 - downtimeRatio;
+
+            process.metrics.plannedProductionTime = DATA_WINDOW_HOURS;
+            process.metrics.actualRuntime = (availRatio * DATA_WINDOW_HOURS).toFixed(2);
+            process.metrics.downtime = (downtimeRatio * DATA_WINDOW_HOURS).toFixed(2);
+            process.oee.availability = (availRatio * 100).toFixed(1);
+
+            // Log state breakdown for visibility
+            const breakdownStr = Object.entries(breakdown)
+                .map(([k, v]) => `${k}: ${v} (${(v/total*100).toFixed(1)}%)`)
+                .join(' | ');
+            logMessage('INFO', `✓ ${processKey.toUpperCase()} States → ${breakdownStr}`);
+            logMessage('INFO', `✓ ${processKey.toUpperCase()} Availability: ${process.oee.availability}% (downtime states: ${process.downtimeStates.join(', ')})`);
+
+        } else {
+            process.oee.availability = 100.0;
+            process.metrics.actualRuntime = DATA_WINDOW_HOURS;
+            process.metrics.downtime = 0;
+        }
+    } else {
+        // No state table configured — check if discoverUNS found one at runtime
+        if (processConfig[processKey] && processConfig[processKey].state) {
+            // State table was populated by discoverUNS — re-run via recursion
+            logMessage('INFO', `🔄 ${processKey.toUpperCase()} state table discovered at runtime, retrying...`);
+        } else {
+            // No state table exists for this process (TFF has no tff_* tables in DB)
+            process.oee.availability = 100.0;
+            process.metrics.actualRuntime = DATA_WINDOW_HOURS;
+            process.metrics.downtime = 0;
+            logMessage('INFO', `✓ ${processKey.toUpperCase()} Availability: 100% (no state table — assumed available)`);
+            logMessage('INFO', `  → To improve: add state table name to processConfig.${processKey}.state`);
+        }
+    }
+
+    // 2. Calculate PERFORMANCE
+    //    Count distinct phase TRANSITIONS (value changes), not total rows.
+    //    This gives the number of actual production cycles completed.
+    if (process.production) {
+        const sql = `SELECT timestamp, value FROM ${process.production} WHERE timestamp >= NOW() - ${DATA_WINDOW_HOURS} hours ORDER BY timestamp ASC LIMIT 5000`;
+        const prodData = await fetchData(sql, process.production);
+
+        if (prodData && prodData.length > 0) {
+            // Count phase transitions: a new production event = value changes to non-idle
+            let transitions = 0;
+            let lastValue = null;
+            const phaseBreakdown = {};
+
+            prodData.forEach(d => {
+                if (!d.value) return;
+                const v = d.value.toString().trim();
+                const vLower = v.toLowerCase();
+                // Track all phase values seen
+                phaseBreakdown[v] = (phaseBreakdown[v] || 0) + 1;
+                // Count transitions into non-idle active phases
+                if (vLower !== 'idle' && vLower !== '' && vLower !== 'null' && vLower !== '0') {
+                    if (lastValue !== v) {
+                        transitions++;   // entered a new active phase
+                    }
+                }
+                lastValue = v;
+            });
+
+            process.metrics.totalUnits = transitions;
+
+            // Ideal: one full cycle per idealCycleTime minutes within runtime
+            const runtimeHours = parseFloat(process.metrics.actualRuntime);
+            const idealCount = runtimeHours > 0 ? Math.max(1, (runtimeHours * 60) / process.metrics.idealCycleTime) : 1;
+            const perfRatio = Math.min(1.0, transitions / idealCount);
+            process.oee.performance = (perfRatio * 100).toFixed(1);
+
+            // Log phase breakdown for visibility
+            const phaseStr = Object.entries(phaseBreakdown)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(' | ');
+            logMessage('INFO', `✓ ${processKey.toUpperCase()} Phases → ${phaseStr}`);
+            logMessage('INFO', `✓ ${processKey.toUpperCase()} Performance: ${process.oee.performance}% (${transitions} phase transitions / ${idealCount.toFixed(1)} ideal @ ${process.metrics.idealCycleTime}min/cycle)`);
+        } else {
+            // No production data — use default 85%
+            process.oee.performance = 85.0;
+            process.metrics.totalUnits = 0;
+            logMessage('INFO', `✓ ${processKey.toUpperCase()} Performance: default 85% (no phase data in ${DATA_WINDOW_HOURS}h window)`);
+        }
+    } else {
+        // No production table configured — use 85% default
+        process.oee.performance = 85.0;
+        process.metrics.totalUnits = 0;
+        logMessage('INFO', `✓ ${processKey.toUpperCase()} Performance: default 85% (no production table configured)`);
+    }
+
+    // 3. Calculate QUALITY
+    //    No reject table exists yet — use 95% default
+    //    Future: query a reject/OOSpec table
+    process.oee.quality = 95.0;
+    process.metrics.goodUnits = Math.round(process.metrics.totalUnits * 0.95);
+    process.metrics.rejectedUnits = process.metrics.totalUnits - process.metrics.goodUnits;
+
+    // 4. Calculate OVERALL OEE  (A × P × Q / 10000)
+    process.oee.overall = (
+        parseFloat(process.oee.availability) *
+        parseFloat(process.oee.performance) *
+        parseFloat(process.oee.quality) / 10000
+    ).toFixed(1);
+
+    logMessage('SUCCESS',
+        `✅ ${processKey.toUpperCase()} OEE: ${process.oee.overall}%` +
+        ` | A: ${process.oee.availability}% P: ${process.oee.performance}% Q: ${process.oee.quality}%`
+    );
+
+    updateOEEDisplay(processKey);
+}
+
+// Update OEE display
+function updateOEEDisplay(processKey) {
+    const oee = processConfig[processKey].oee;
+    const metrics = processConfig[processKey].metrics;
+    const prefix = processKey.toLowerCase();
+
+    const elements = {
+        oee: document.getElementById(`${prefix}_oee`),
+        avail: document.getElementById(`${prefix}_avail`),
+        perf: document.getElementById(`${prefix}_perf`),
+        qual: document.getElementById(`${prefix}_qual`),
+        status: document.getElementById(`${prefix}_status`),
+        runtime: document.getElementById(`${prefix}_runtime`),
+        downtime: document.getElementById(`${prefix}_downtime`),
+        units: document.getElementById(`${prefix}_units`),
+        good: document.getElementById(`${prefix}_good`),
+        rejected: document.getElementById(`${prefix}_rejected`)
+    };
+
+    if (elements.oee) elements.oee.textContent = oee.overall;
+    if (elements.avail) elements.avail.textContent = oee.availability;
+    if (elements.perf) elements.perf.textContent = oee.performance;
+    if (elements.qual) elements.qual.textContent = oee.quality;
+
+    if (elements.status) {
+        elements.status.className = 'oee-status';
+        const oeeValue = parseFloat(oee.overall);
+        
+        if (oeeValue >= 85) {
+            elements.status.classList.add('excellent');
+            elements.status.textContent = 'World Class (≥85%)';
+        } else if (oeeValue >= 70) {
+            elements.status.classList.add('good');
+            elements.status.textContent = 'Good (70-84%)';
+        } else if (oeeValue >= 50) {
+            elements.status.classList.add('fair');
+            elements.status.textContent = 'Fair (50-69%)';
+        } else {
+            elements.status.classList.add('poor');
+            elements.status.textContent = 'Poor (<50%)';
+        }
+    }
+
+    if (elements.runtime) elements.runtime.textContent = metrics.actualRuntime;
+    if (elements.downtime) elements.downtime.textContent = metrics.downtime;
+    if (elements.units) elements.units.textContent = metrics.totalUnits;
+    if (elements.good) elements.good.textContent = metrics.goodUnits;
+    if (elements.rejected) elements.rejected.textContent = metrics.rejectedUnits;
+
+    // Render state breakdown
+    const statesEl = document.getElementById(`${prefix}_states`);
+    if (statesEl) {
+        if (metrics.stateBreakdown && Object.keys(metrics.stateBreakdown).length > 0) {
+            const colors = { 'Running': '#2ecc71', 'Idle': '#f39c12', 'IDLE': '#f39c12', 'Idle   ': '#f39c12' };
+            statesEl.innerHTML = Object.entries(metrics.stateBreakdown)
+                .map(([state, count]) => {
+                    const color = colors[state] || '#95a5a6';
+                    return `<span style="background: ${color}22; border: 1px solid ${color}; padding: 2px 8px; border-radius: 3px; margin-right: 6px; color: ${color}; font-size: 11px;">${state.trim()}: ${count}</span>`;
+                }).join('');
+        } else {
+            statesEl.textContent = processKey === 'all' ? 'See individual process tabs' : 'No state data';
+        }
+    }
+}
+
+// Update all data
+async function updateAllData() {
+    if (isPaused) return;
+
+    console.log('🔄 Updating OEE dashboard...');
+    logMessage('INFO', '🔄 Starting OEE calculation cycle...');
+
+    for (const key of ['sub', 'chrom', 'sum', 'tff']) {
+        await calculateOEE(key);
+    }
+
+    // Calculate overall
+    const processes = Object.values(processConfig).filter(p => p.name);
+    const avgOEE = processes.reduce((sum, p) => sum + parseFloat(p.oee.overall), 0) / processes.length;
+    const avgAvail = processes.reduce((sum, p) => sum + parseFloat(p.oee.availability), 0) / processes.length;
+    const avgPerf = processes.reduce((sum, p) => sum + parseFloat(p.oee.performance), 0) / processes.length;
+    const avgQual = processes.reduce((sum, p) => sum + parseFloat(p.oee.quality), 0) / processes.length;
+
+    const totalUnits = processes.reduce((sum, p) => sum + (p.metrics.totalUnits || 0), 0);
+    const totalGood = processes.reduce((sum, p) => sum + (p.metrics.goodUnits || 0), 0);
+    const totalRejected = processes.reduce((sum, p) => sum + (p.metrics.rejectedUnits || 0), 0);
+    const totalRuntime = processes.reduce((sum, p) => sum + parseFloat(p.metrics.actualRuntime || 0), 0);
+    const totalDowntime = processes.reduce((sum, p) => sum + parseFloat(p.metrics.downtime || 0), 0);
+
+    processConfig.all = {
+        oee: {
+            overall: avgOEE.toFixed(1),
+            availability: avgAvail.toFixed(1),
+            performance: avgPerf.toFixed(1),
+            quality: avgQual.toFixed(1)
+        },
+        metrics: {
+            actualRuntime: totalRuntime.toFixed(2),
+            downtime: totalDowntime.toFixed(2),
+            totalUnits: totalUnits,
+            goodUnits: totalGood,
+            rejectedUnits: totalRejected
+        }
+    };
+
+    updateOEEDisplay('all');
+
+    logMessage('SUCCESS', `✅ OEE calculation complete - Overall: ${avgOEE.toFixed(1)}%`);
+}
+
+// Toggle pause
+function togglePause() {
+    isPaused = !isPaused;
+    
+    const btn = document.getElementById('pauseBtn');
+    const icon = document.getElementById('pauseIcon');
+    const text = document.getElementById('pauseText');
+    const status = document.getElementById('statusText');
+    const dot = document.getElementById('statusDot');
+
+    if (isPaused) {
+        btn.classList.add('paused');
+        icon.textContent = '▶️';
+        text.textContent = 'Resume';
+        status.textContent = 'Paused';
+        dot.style.animation = 'none';
+        dot.style.background = '#e67e22';
+        stopRefresh();
+        logMessage('INFO', '⏸ Data refresh paused');
+    } else {
+        btn.classList.remove('paused');
+        icon.textContent = '⏸';
+        text.textContent = 'Pause';
+        status.textContent = 'Live';
+        dot.style.animation = 'pulse 2s infinite';
+        dot.style.background = '#2ecc71';
+        startRefresh();
+        logMessage('INFO', '▶️ Data refresh resumed');
+    }
+}
+
+// Start/stop refresh
+function startRefresh() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    updateAllData();
+    refreshTimer = setInterval(updateAllData, REFRESH_INTERVAL);
+}
+
+function stopRefresh() {
+    if (refreshTimer) {
+        clearInterval(refreshTimer);
+        refreshTimer = null;
+    }
+}
+
+// Show process
+function showProcess(processKey) {
+    currentProcess = processKey;
+
+    document.querySelectorAll('.process-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    document.querySelectorAll('.process-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    document.getElementById(`${processKey}Process`).classList.add('active');
+
+    logMessage('INFO', `📋 Switched to ${processKey.toUpperCase()} process view`);
+}
+
+// Logging functions
+function logMessage(type, message) {
+    const timestamp = new Date().toLocaleTimeString();
+    systemLog.unshift({ type, message, timestamp, details: null });
+    if (systemLog.length > 100) systemLog = systemLog.slice(0, 100);
+    updateLog();
+}
+
+function logDetailedQuery(type, message, details) {
+    const timestamp = new Date().toLocaleTimeString();
+    systemLog.unshift({ type, message, timestamp, details });
+    if (systemLog.length > 100) systemLog = systemLog.slice(0, 100);
+    updateLog();
+}
+
+function updateLog() {
+    const logContent = document.getElementById('logContent');
+    if (!logContent) return;
+
+    let html = '';
+    systemLog.forEach(entry => {
+        let detailsHtml = '';
+        
+        if (entry.details) {
+            if (entry.details.restAPI) {
+                detailsHtml += `
+                    <div style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 3px;">
+                        <div style="color: #3498db; font-weight: 600; font-size: 10px; margin-bottom: 4px;">📊 REST API</div>
+                        <div style="color: #95a5a6; font-size: 9px;">URL: ${entry.details.restAPI.url}</div>
+                        <div style="color: #95a5a6; font-size: 9px;">Method: ${entry.details.restAPI.method}</div>
+                        ${entry.details.restAPI.body ? `<div style="color: #ecf0f1; font-size: 9px; margin-top: 3px;">${JSON.stringify(entry.details.restAPI.body, null, 2)}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            if (entry.details.anylogAPI) {
+                detailsHtml += `
+                    <div style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 3px;">
+                        <div style="color: #9b59b6; font-weight: 600; font-size: 10px; margin-bottom: 4px;">🔮 AnyLog MCP</div>
+                        <div style="color: #95a5a6; font-size: 9px;">Connector: ${entry.details.anylogAPI.mcpConnector}</div>
+                        <div style="color: #ecf0f1; font-size: 9px; margin-top: 3px;">command: ${entry.details.anylogAPI.command}</div>
+                    </div>
+                `;
+            }
+
+            if (entry.details.sql) {
+                detailsHtml += `
+                    <div style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 3px;">
+                        <div style="color: #f39c12; font-weight: 600; font-size: 10px; margin-bottom: 4px;">💾 SQL Query</div>
+                        <div style="color: #ecf0f1; font-size: 9px; word-break: break-all;">${entry.details.sql}</div>
+                    </div>
+                `;
+            }
+
+            if (entry.details.response) {
+                const sizeKB = (entry.details.response.responseSize / 1024).toFixed(2);
+                detailsHtml += `
+                    <div style="margin-top: 8px; padding: 8px; background: rgba(46, 204, 113, 0.2); border-radius: 3px;">
+                        <div style="color: #2ecc71; font-weight: 600; font-size: 10px; margin-bottom: 4px;">✅ Response</div>
+                        <div style="color: #ecf0f1; font-size: 9px; font-weight: 600;">✓ Rows Returned: ${entry.details.response.rowsReturned}</div>
+                        <div style="color: #ecf0f1; font-size: 9px;">✓ Response Size: ${sizeKB} KB</div>
+                    </div>
+                `;
+            }
+
+            if (entry.details.error) {
+                detailsHtml += `
+                    <div style="margin-top: 8px; padding: 8px; background: rgba(231, 76, 60, 0.2); border-radius: 3px;">
+                        <div style="color: #e74c3c; font-weight: 600; font-size: 10px;">✗ Error: ${entry.details.error}</div>
+                    </div>
+                `;
+            }
+        }
+
+        html += `
+            <div class="log-entry ${entry.type === 'ERROR' ? 'error' : ''}">
+                <div class="log-timestamp">[${entry.timestamp}] ${entry.type}</div>
+                <div class="log-message" style="color: #ecf0f1; margin-bottom: 5px;">${entry.message}</div>
+                ${detailsHtml}
+            </div>
+        `;
+    });
+
+    logContent.innerHTML = html;
+}
+
+function clearLog() {
+    if (confirm('Clear all log entries?')) {
+        systemLog = [];
+        updateLog();
+        logMessage('INFO', '🗑️ Log cleared');
+    }
+}
+
+window.addEventListener('load', init);
+    </script>
+</body>
+</html>
