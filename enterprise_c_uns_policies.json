@@ -1,326 +1,3547 @@
-[
-  {
-    "uns": {
-      "name": "CM",
-      "namespace": "Enterprise_C/tff/CM",
-      "uns_level": "device",
-      "parent": "2d8e35eaf0df9bfbdec0d112a410f24e",
-      "dbms": "manufacturing_historian",
-      "table": "tff_cm",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "TFF Conductivity Meter \u2014 measures retentate conductivity in the TFF loop"
+{
+  "command": "blockchain get uns",
+  "generated_for": "Enterprise_C ISA-88/ISA-95 root policy tree (SUB, SUM, TFF, CHROM)",
+  "generated_at": "2026-02-14T05:51:00.313993Z",
+  "policies": [
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "76380522ce580e8148a6dc81667f6c57",
+        "ledger": "global",
+        "name": "Enterprise_C",
+        "namespace": "Enterprise_C",
+        "source_node": "Site1@localhost:32049",
+        "isa95": {
+          "level": "L4-L3",
+          "entity": "Enterprise",
+          "standard": "ISA-95"
+        },
+        "isa88": {
+          "entity": "ProcessCell",
+          "note": "Enterprise root for batch-capable operations",
+          "standard": "ISA-88"
+        },
+        "description": "Enterprise root for Enterprise_C. Use this as the top-level UNS namespace for all data products, governance, and analytics. Maps to ISA\u201195 Enterprise context (L4/L3) and provides the parent scope for ISA\u201188 batch-capable process cells and units beneath it."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "b6f388730a77318b03545c30db021d60",
+        "ledger": "global",
+        "name": "Site1",
+        "namespace": "Enterprise_C/Site1",
+        "source_node": "Site1@localhost:32049",
+        "parent": "76380522ce580e8148a6dc81667f6c57",
+        "isa95": {
+          "level": "L3",
+          "entity": "Site",
+          "standard": "ISA-95"
+        },
+        "description": "Site node for Site1. Represents the physical/organizational site in ISA\u201195 (typically L3). This is the anchor for site-level scheduling, inventory, and performance reporting, and the parent scope for all Areas and Process Cells at the site."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "80073da2b9b7133814d539257e0ac6f8",
+        "ledger": "global",
+        "name": "Bioprocessing",
+        "namespace": "Enterprise_C/Site1/Bioprocessing",
+        "source_node": "Site1@localhost:32049",
+        "parent": "b6f388730a77318b03545c30db021d60",
+        "isa95": {
+          "level": "L3-L2",
+          "entity": "Area",
+          "standard": "ISA-95"
+        },
+        "isa88": {
+          "entity": "ProcessCell",
+          "standard": "ISA-88"
+        },
+        "description": "Area node for Bioprocessing. Represents a functional production area in ISA\u201195 (L2/L3 boundary). Use this level to group related unit operations, KPIs, and alarms across downstream processing (DSP) assets and to apply area-wide governance (naming, retention, quality rules)."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "1ebff3339300b5b8208e759e2934bb53",
+        "ledger": "global",
+        "name": "DSP_ProcessCell",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell",
+        "source_node": "Site1@localhost:32049",
+        "parent": "80073da2b9b7133814d539257e0ac6f8",
+        "isa95": {
+          "level": "L2",
+          "entity": "ProcessCell",
+          "standard": "ISA-95"
+        },
+        "isa88": {
+          "entity": "ProcessCell",
+          "standard": "ISA-88"
+        },
+        "description": "Downstream Processing (DSP) Process Cell. In ISA\u201188, the Process Cell groups multiple Units that execute a coordinated set of batch and/or continuous steps. In ISA\u201195, this aligns with L2 manufacturing control scope for DSP assets and procedures."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "a376d7f9d1ebefccfc8d7c526ee3d644",
+        "ledger": "global",
+        "name": "sub",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub",
+        "source_node": "Site1@localhost:32049",
+        "parent": "1ebff3339300b5b8208e759e2934bb53",
+        "dbms": "enterprise_c",
+        "table": "sub_1",
+        "display_name": "Subculture",
+        "isa95": {
+          "level": "L2",
+          "entity": "Unit",
+          "standard": "ISA-95"
+        },
+        "isa88": {
+          "entity": "Unit",
+          "standard": "ISA-88"
+        },
+        "tags": [
+          "oee",
+          "batch",
+          "quality",
+          "equipment"
+        ],
+        "description": "SUB (Subculture) unit. Typically covers inoculum/seed expansion handoff into downstream steps. Captures run context (batch ID, lot, recipe), key setpoints/measurements, and event state. This node is the canonical UNS address for the unit\u2019s operational data and context. It maps to ISA\u201188 Unit and ISA\u201195 Unit scope (L2). Historian binding: dbms='enterprise_c', table='sub_1'."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "b55d0d42e3baf314486c4ced730aef32",
+        "ledger": "global",
+        "name": "equipment",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/equipment",
+        "source_node": "Site1@localhost:32049",
+        "parent": "a376d7f9d1ebefccfc8d7c526ee3d644",
+        "isa88": {
+          "entity": "EquipmentModule",
+          "standard": "ISA-88"
+        },
+        "isa95": {
+          "level": "L1-L2",
+          "entity": "Equipment",
+          "standard": "ISA-95"
+        },
+        "description": "Equipment branch for this Unit. Use this subtree to model physical assets and equipment modules (ISA\u201188 EquipmentModule) such as pumps, valves, sensors, skids, and controllers. Typical children could include asset identifiers, health/state, maintenance counters, and alarm summaries."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "b3a8cda61a8c3ba49e3c57d77f681d11",
+        "ledger": "global",
+        "name": "procedures",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures",
+        "source_node": "Site1@localhost:32049",
+        "parent": "a376d7f9d1ebefccfc8d7c526ee3d644",
+        "isa88": {
+          "entity": "Procedure",
+          "standard": "ISA-88"
+        },
+        "isa95": {
+          "level": "L3-L2",
+          "entity": "ProcessSegment",
+          "standard": "ISA-95"
+        },
+        "description": "Procedural control branch (ISA\u201188). Organizes the executable control model for the unit into Unit Procedures \u2192 Operations \u2192 Phases. Use this subtree to standardize batch semantics, capture phase timing, and map control/SCADA events into consistent UNS paths."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "5fd7e0d3c9e4bc1cdd4da58d914ede53",
+        "ledger": "global",
+        "name": "prepare",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare",
+        "source_node": "Site1@localhost:32049",
+        "parent": "b3a8cda61a8c3ba49e3c57d77f681d11",
+        "display_name": "Prepare",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'prepare'. Represents a major stage of unit execution in ISA\u201188. Typical intent: prepare = ready equipment/materials and verify preconditions Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "5bbb86067e5decd82a5ed84eb175b854",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "5fd7e0d3c9e4bc1cdd4da58d914ede53",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "edafc793a1b4cda2d0d95a7928b78437",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "5bbb86067e5decd82a5ed84eb175b854",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "c0821a57730ce2a7aa0da62a222548cc",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "5bbb86067e5decd82a5ed84eb175b854",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "74238d451eec6d248f63e42e222d158a",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "5bbb86067e5decd82a5ed84eb175b854",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "9c9f3058a29086e12bf973b63e618480",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "5fd7e0d3c9e4bc1cdd4da58d914ede53",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "5c2cc66a18c6720d4bb5c112c85ba4e4",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "9c9f3058a29086e12bf973b63e618480",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "c294260c05c30e4ae1af34a18a24263c",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "9c9f3058a29086e12bf973b63e618480",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "d560c0caa9052020bc4e93671252ffad",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "9c9f3058a29086e12bf973b63e618480",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "6140fea57fe374c5dfb9a0e0a52b7ea5",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "5fd7e0d3c9e4bc1cdd4da58d914ede53",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "ea225ebb60e2ec2e535963266fca2a53",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6140fea57fe374c5dfb9a0e0a52b7ea5",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "18785059d8182b1078a77b5c43775f42",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6140fea57fe374c5dfb9a0e0a52b7ea5",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "f9778b5c22827f633ec5f74efa811dea",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/prepare/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6140fea57fe374c5dfb9a0e0a52b7ea5",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "a67a46230835da47ba3f90333d6ec6a3",
+        "ledger": "global",
+        "name": "run",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run",
+        "source_node": "Site1@localhost:32049",
+        "parent": "b3a8cda61a8c3ba49e3c57d77f681d11",
+        "display_name": "Run",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'run'. Represents a major stage of unit execution in ISA\u201188. Typical intent: run = execute the primary processing step(s) and collect critical process parameters Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "4c9626fe582d17d5759a0b1fcfb5639b",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "a67a46230835da47ba3f90333d6ec6a3",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "4c3f18a6fedab4321e9547a20d82274f",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "4c9626fe582d17d5759a0b1fcfb5639b",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "c17852388f731a184c5a962064582817",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "4c9626fe582d17d5759a0b1fcfb5639b",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "959b27adc38b9b1ec65abee92cac650e",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "4c9626fe582d17d5759a0b1fcfb5639b",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "6f81768b09e2836d0941f2f8073149bd",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "a67a46230835da47ba3f90333d6ec6a3",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "22d0290734c7b6e7f0ff9abeb9e4b67f",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6f81768b09e2836d0941f2f8073149bd",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "dd6ecf6e0df57b4a18c60e9eb609decd",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6f81768b09e2836d0941f2f8073149bd",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "290753d0bc5c2ffd84c4d3938f54755d",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6f81768b09e2836d0941f2f8073149bd",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "69a3dce5bbed1bc89e3a7ac89dbc4576",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "a67a46230835da47ba3f90333d6ec6a3",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "e1d9f1a3974dcf3e3c00510241b7814b",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "69a3dce5bbed1bc89e3a7ac89dbc4576",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "26fcb18bba624dd13ae6ab512ce18197",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "69a3dce5bbed1bc89e3a7ac89dbc4576",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "0504f0feeffbf007557435825957dafe",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/run/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "69a3dce5bbed1bc89e3a7ac89dbc4576",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "02a6b52f055a61f717ce36391f45a246",
+        "ledger": "global",
+        "name": "cip",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip",
+        "source_node": "Site1@localhost:32049",
+        "parent": "b3a8cda61a8c3ba49e3c57d77f681d11",
+        "display_name": "CIP/SIP",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'cip'. Represents a major stage of unit execution in ISA\u201188. Typical intent: cip = clean/steam-in-place activities, post-run resets, and readiness for next batch Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "de8881956165a7be8923fe0976ad6636",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "02a6b52f055a61f717ce36391f45a246",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "cc72c3508d1c25d9a991650285017385",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "de8881956165a7be8923fe0976ad6636",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "a3b746c2aec4d2f9df661a49c54faf8a",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "de8881956165a7be8923fe0976ad6636",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "327479b3c44986f4afd02d9c48d887d4",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "de8881956165a7be8923fe0976ad6636",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "952410dd2471d44dbef1b05cf542b371",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "02a6b52f055a61f717ce36391f45a246",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "9ded1b5935e44f11e9e9a6d325405a92",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "952410dd2471d44dbef1b05cf542b371",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "7c1c1fb8f865a13b66ac8f33a32bed5c",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "952410dd2471d44dbef1b05cf542b371",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "a21674f6692e08424e1093914517d4f9",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "952410dd2471d44dbef1b05cf542b371",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "9f81bf69f31683d50a483de6f3431468",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "02a6b52f055a61f717ce36391f45a246",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "de71213b1985a31c8baf16d171bebb1f",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "9f81bf69f31683d50a483de6f3431468",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "80d8d8e2e49389309fbf97f29c556711",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "9f81bf69f31683d50a483de6f3431468",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "9c566a2f0e4bf206c293a90885c8af59",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/procedures/cip/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "9f81bf69f31683d50a483de6f3431468",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "bbe96757e51a49b7e2318d45db025738",
+        "ledger": "global",
+        "name": "production",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/production",
+        "source_node": "Site1@localhost:32049",
+        "parent": "a376d7f9d1ebefccfc8d7c526ee3d644",
+        "isa95": {
+          "level": "L3",
+          "entity": "ProductionOperations",
+          "standard": "ISA-95"
+        },
+        "description": "Production operations branch (ISA\u201195). Use for L3-facing production objects: schedule, performance, and material consumption. This is where MES-style reporting and planning interfaces typically read/write."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "e63eec75a2590bb8f1a0bfad7f17e130",
+        "ledger": "global",
+        "name": "schedule",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/production/schedule",
+        "source_node": "Site1@localhost:32049",
+        "parent": "bbe96757e51a49b7e2318d45db025738",
+        "display_name": "ProductionSchedule",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "ProductionSchedule view. Store planned/active work orders, batch targets, start/end windows, and resource constraints for this unit. Link schedule items to batch IDs and recipe versions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "4cb6996ca8ee532d394c5dda133bb4c4",
+        "ledger": "global",
+        "name": "performance",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/production/performance",
+        "source_node": "Site1@localhost:32049",
+        "parent": "bbe96757e51a49b7e2318d45db025738",
+        "display_name": "ProductionPerformance",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "ProductionPerformance view. Store throughput, yield, cycle time, OEE-style metrics, and downtime categorization for this unit. Use consistent reason codes and rollups by batch/run."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "2f8fb1d4d45b54bc1b1a3b7478741c8c",
+        "ledger": "global",
+        "name": "material",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/production/material",
+        "source_node": "Site1@localhost:32049",
+        "parent": "bbe96757e51a49b7e2318d45db025738",
+        "display_name": "MaterialConsumption",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "MaterialConsumption view. Store material genealogy, inputs/outputs, buffer lots, and consumption events. Link to lot numbers, COAs, and quality release status for end-to-end traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "050e302276581e8d79f9816cada11042",
+        "ledger": "global",
+        "name": "quality",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/quality",
+        "source_node": "Site1@localhost:32049",
+        "parent": "a376d7f9d1ebefccfc8d7c526ee3d644",
+        "isa95": {
+          "level": "L3",
+          "entity": "QualityOperations",
+          "standard": "ISA-95"
+        },
+        "description": "Quality operations branch (ISA\u201195). Use for L3-facing quality objects: tests, specifications, and deviation management. This subtree supports compliance, release, and investigation workflows."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "e73eb6a20cce967631f3708a5eb95d9f",
+        "ledger": "global",
+        "name": "tests",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/quality/tests",
+        "source_node": "Site1@localhost:32049",
+        "parent": "050e302276581e8d79f9816cada11042",
+        "display_name": "QualityTests",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "QualityTests view. Store in-process and release test results, sample IDs, timestamps, methods, and pass/fail outcomes. Link results to batch/run context and measurement sources."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "7aff9ac4c0dc07187419955112abe3d5",
+        "ledger": "global",
+        "name": "specs",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/quality/specs",
+        "source_node": "Site1@localhost:32049",
+        "parent": "050e302276581e8d79f9816cada11042",
+        "display_name": "Specifications",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "Specifications view. Store target/spec limits and acceptance criteria (e.g., conductivity range, UV thresholds, pH). Prefer versioned specs tied to product and recipe version."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "b24913610e90bf4fb96a31994433e25b",
+        "ledger": "global",
+        "name": "deviations",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sub/quality/deviations",
+        "source_node": "Site1@localhost:32049",
+        "parent": "050e302276581e8d79f9816cada11042",
+        "display_name": "Deviations",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "Deviations view. Store deviations, investigations, CAPAs, and exception events. Link each deviation to the relevant batch/phase, affected parameters, disposition, and approvals."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "1e2d6cea73ff4994825bd2da6d7f8187",
+        "ledger": "global",
+        "name": "sum",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum",
+        "source_node": "Site1@localhost:32049",
+        "parent": "1ebff3339300b5b8208e759e2934bb53",
+        "dbms": "enterprise_c",
+        "table": "sum_1",
+        "display_name": "Seed/Upstream Mix",
+        "isa95": {
+          "level": "L2",
+          "entity": "Unit",
+          "standard": "ISA-95"
+        },
+        "isa88": {
+          "entity": "Unit",
+          "standard": "ISA-88"
+        },
+        "tags": [
+          "oee",
+          "batch",
+          "quality",
+          "equipment"
+        ],
+        "description": "SUM (Seed/Upstream Mix) unit. Represents media/buffer preparation or seed mixing prior to DSP. Use to track material genealogy, mixing parameters, holds, and quality release gates. This node is the canonical UNS address for the unit\u2019s operational data and context. It maps to ISA\u201188 Unit and ISA\u201195 Unit scope (L2). Historian binding: dbms='enterprise_c', table='sum_1'."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "988bb29a64d931838f6385e3385bbc41",
+        "ledger": "global",
+        "name": "equipment",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/equipment",
+        "source_node": "Site1@localhost:32049",
+        "parent": "1e2d6cea73ff4994825bd2da6d7f8187",
+        "isa88": {
+          "entity": "EquipmentModule",
+          "standard": "ISA-88"
+        },
+        "isa95": {
+          "level": "L1-L2",
+          "entity": "Equipment",
+          "standard": "ISA-95"
+        },
+        "description": "Equipment branch for this Unit. Use this subtree to model physical assets and equipment modules (ISA\u201188 EquipmentModule) such as pumps, valves, sensors, skids, and controllers. Typical children could include asset identifiers, health/state, maintenance counters, and alarm summaries."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "07e096ceadede7a9292cdf50c729b520",
+        "ledger": "global",
+        "name": "procedures",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures",
+        "source_node": "Site1@localhost:32049",
+        "parent": "1e2d6cea73ff4994825bd2da6d7f8187",
+        "isa88": {
+          "entity": "Procedure",
+          "standard": "ISA-88"
+        },
+        "isa95": {
+          "level": "L3-L2",
+          "entity": "ProcessSegment",
+          "standard": "ISA-95"
+        },
+        "description": "Procedural control branch (ISA\u201188). Organizes the executable control model for the unit into Unit Procedures \u2192 Operations \u2192 Phases. Use this subtree to standardize batch semantics, capture phase timing, and map control/SCADA events into consistent UNS paths."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "52ebb044d134f3e87619daab712b13ec",
+        "ledger": "global",
+        "name": "prepare",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare",
+        "source_node": "Site1@localhost:32049",
+        "parent": "07e096ceadede7a9292cdf50c729b520",
+        "display_name": "Prepare",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'prepare'. Represents a major stage of unit execution in ISA\u201188. Typical intent: prepare = ready equipment/materials and verify preconditions Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "1a71e2a3c0175e94089c66593b5acece",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "52ebb044d134f3e87619daab712b13ec",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "c958001c2226c1282d652ebd5157bc5b",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "1a71e2a3c0175e94089c66593b5acece",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "29e5dc3db40258c2a776df8d5923357b",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "1a71e2a3c0175e94089c66593b5acece",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "a869736d68a7c3d11cff112de7170fc1",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "1a71e2a3c0175e94089c66593b5acece",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "410f7f9f0d6d8b9b2cb32438e9e13605",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "52ebb044d134f3e87619daab712b13ec",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "09ec9348c308b5a2f932fcd799dcd5c4",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "410f7f9f0d6d8b9b2cb32438e9e13605",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "ceefcb9a1d75dd35e57026b0c43195eb",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "410f7f9f0d6d8b9b2cb32438e9e13605",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "5e0669bdc15e0c4bea2673ef86b23fdd",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "410f7f9f0d6d8b9b2cb32438e9e13605",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "08198a01be0dd2e5d7b6af05bb82c257",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "52ebb044d134f3e87619daab712b13ec",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "5bb66596b78f0f790506f5cac236d983",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "08198a01be0dd2e5d7b6af05bb82c257",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "d69145a5d67ffbd64aa23bfd85f6acde",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "08198a01be0dd2e5d7b6af05bb82c257",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "8e114baea253ae6c40b476aac58e90cb",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/prepare/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "08198a01be0dd2e5d7b6af05bb82c257",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "bec0b987475b2899f37156132ed31e17",
+        "ledger": "global",
+        "name": "run",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run",
+        "source_node": "Site1@localhost:32049",
+        "parent": "07e096ceadede7a9292cdf50c729b520",
+        "display_name": "Run",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'run'. Represents a major stage of unit execution in ISA\u201188. Typical intent: run = execute the primary processing step(s) and collect critical process parameters Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "f08d16445b6bff4f280cb491e18676b1",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "bec0b987475b2899f37156132ed31e17",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "e1f4bce31422edee3aeb01576664bfc9",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "f08d16445b6bff4f280cb491e18676b1",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "ba4ebdd477ca8f570669d623b19a7616",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "f08d16445b6bff4f280cb491e18676b1",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "6dc9b347717d68135485092492c444fb",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "f08d16445b6bff4f280cb491e18676b1",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "3854932f4187de6368ecf50399346d2d",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "bec0b987475b2899f37156132ed31e17",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "49edd0f96957f2de85414e370dbe2f00",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "3854932f4187de6368ecf50399346d2d",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "0e8d269414815ad0006dd139208d08a3",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "3854932f4187de6368ecf50399346d2d",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "297d228adcacc4d50dca5270fae16e0c",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "3854932f4187de6368ecf50399346d2d",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "acc1d306a80000153cd374505622413a",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "bec0b987475b2899f37156132ed31e17",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "77d855f27e5cd21741cb266678255f46",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "acc1d306a80000153cd374505622413a",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "26ea147f61c14fb363bed46116a1fe1c",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "acc1d306a80000153cd374505622413a",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "1b8225112b0c800a35f2fbf155539aea",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/run/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "acc1d306a80000153cd374505622413a",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "4eaca22de9be1a1e65d3ea18e9841209",
+        "ledger": "global",
+        "name": "cip",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip",
+        "source_node": "Site1@localhost:32049",
+        "parent": "07e096ceadede7a9292cdf50c729b520",
+        "display_name": "CIP/SIP",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'cip'. Represents a major stage of unit execution in ISA\u201188. Typical intent: cip = clean/steam-in-place activities, post-run resets, and readiness for next batch Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "9dfe56517a2b076ee1f1e00428a3f1fd",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "4eaca22de9be1a1e65d3ea18e9841209",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "d8403cd3db569b12096647074bc87ca8",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "9dfe56517a2b076ee1f1e00428a3f1fd",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "b323da60b5791c14c48bf96c161fe947",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "9dfe56517a2b076ee1f1e00428a3f1fd",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "2fa137591f491d73158e0eba6c34a0f8",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "9dfe56517a2b076ee1f1e00428a3f1fd",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "81da13c9aa44c7d62b8457ffee8093ed",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "4eaca22de9be1a1e65d3ea18e9841209",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "8ac20ca8c835df4e0c37272e2d6b61b6",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "81da13c9aa44c7d62b8457ffee8093ed",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "2198644f5756105dc352f432647a6df7",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "81da13c9aa44c7d62b8457ffee8093ed",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "e24c0a72b2d968c41d25e1b75a5b462c",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "81da13c9aa44c7d62b8457ffee8093ed",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "5c19c3c0452e0ce45d5a7ae1ced384ab",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "4eaca22de9be1a1e65d3ea18e9841209",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "d2d283095925ab9324f59b0185716291",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "5c19c3c0452e0ce45d5a7ae1ced384ab",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "6bc48ac02543510a66210a4ce23b4da6",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "5c19c3c0452e0ce45d5a7ae1ced384ab",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "18db9127b7845d24aa73e3fc70e75b7c",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/procedures/cip/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "5c19c3c0452e0ce45d5a7ae1ced384ab",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "921d7f16f0ee1a9a8232651de371f058",
+        "ledger": "global",
+        "name": "production",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/production",
+        "source_node": "Site1@localhost:32049",
+        "parent": "1e2d6cea73ff4994825bd2da6d7f8187",
+        "isa95": {
+          "level": "L3",
+          "entity": "ProductionOperations",
+          "standard": "ISA-95"
+        },
+        "description": "Production operations branch (ISA\u201195). Use for L3-facing production objects: schedule, performance, and material consumption. This is where MES-style reporting and planning interfaces typically read/write."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "5e81125745bdb6a478d012b8ebe73746",
+        "ledger": "global",
+        "name": "schedule",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/production/schedule",
+        "source_node": "Site1@localhost:32049",
+        "parent": "921d7f16f0ee1a9a8232651de371f058",
+        "display_name": "ProductionSchedule",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "ProductionSchedule view. Store planned/active work orders, batch targets, start/end windows, and resource constraints for this unit. Link schedule items to batch IDs and recipe versions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "45c05da6f6a41e30b05a91735e185b92",
+        "ledger": "global",
+        "name": "performance",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/production/performance",
+        "source_node": "Site1@localhost:32049",
+        "parent": "921d7f16f0ee1a9a8232651de371f058",
+        "display_name": "ProductionPerformance",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "ProductionPerformance view. Store throughput, yield, cycle time, OEE-style metrics, and downtime categorization for this unit. Use consistent reason codes and rollups by batch/run."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "51491cd02939f214fa34f6d5ad7847ac",
+        "ledger": "global",
+        "name": "material",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/production/material",
+        "source_node": "Site1@localhost:32049",
+        "parent": "921d7f16f0ee1a9a8232651de371f058",
+        "display_name": "MaterialConsumption",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "MaterialConsumption view. Store material genealogy, inputs/outputs, buffer lots, and consumption events. Link to lot numbers, COAs, and quality release status for end-to-end traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "75946b4d58dfca45c377c14bf8e43a1f",
+        "ledger": "global",
+        "name": "quality",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/quality",
+        "source_node": "Site1@localhost:32049",
+        "parent": "1e2d6cea73ff4994825bd2da6d7f8187",
+        "isa95": {
+          "level": "L3",
+          "entity": "QualityOperations",
+          "standard": "ISA-95"
+        },
+        "description": "Quality operations branch (ISA\u201195). Use for L3-facing quality objects: tests, specifications, and deviation management. This subtree supports compliance, release, and investigation workflows."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "967029e101f834c3ed0b5d13ca6868ff",
+        "ledger": "global",
+        "name": "tests",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/quality/tests",
+        "source_node": "Site1@localhost:32049",
+        "parent": "75946b4d58dfca45c377c14bf8e43a1f",
+        "display_name": "QualityTests",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "QualityTests view. Store in-process and release test results, sample IDs, timestamps, methods, and pass/fail outcomes. Link results to batch/run context and measurement sources."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "962d5154ae183d0d610d70d433e6bdee",
+        "ledger": "global",
+        "name": "specs",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/quality/specs",
+        "source_node": "Site1@localhost:32049",
+        "parent": "75946b4d58dfca45c377c14bf8e43a1f",
+        "display_name": "Specifications",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "Specifications view. Store target/spec limits and acceptance criteria (e.g., conductivity range, UV thresholds, pH). Prefer versioned specs tied to product and recipe version."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "44db56c86594ebf2e5bc8f758f740de2",
+        "ledger": "global",
+        "name": "deviations",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/sum/quality/deviations",
+        "source_node": "Site1@localhost:32049",
+        "parent": "75946b4d58dfca45c377c14bf8e43a1f",
+        "display_name": "Deviations",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "Deviations view. Store deviations, investigations, CAPAs, and exception events. Link each deviation to the relevant batch/phase, affected parameters, disposition, and approvals."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "e37f3447ba04ce1490b261a40d715fd3",
+        "ledger": "global",
+        "name": "tff",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff",
+        "source_node": "Site1@localhost:32049",
+        "parent": "1ebff3339300b5b8208e759e2934bb53",
+        "dbms": "enterprise_c",
+        "table": "tff_1",
+        "display_name": "TFF Filtration",
+        "isa95": {
+          "level": "L2",
+          "entity": "Unit",
+          "standard": "ISA-95"
+        },
+        "isa88": {
+          "entity": "Unit",
+          "standard": "ISA-88"
+        },
+        "tags": [
+          "oee",
+          "batch",
+          "quality",
+          "equipment"
+        ],
+        "description": "TFF (Tangential Flow Filtration) unit. Represents filtration/concentration/diafiltration. Use to track TMP, flux, conductivity, yield, filter health, and phase transitions (ramp/hold/flush). This node is the canonical UNS address for the unit\u2019s operational data and context. It maps to ISA\u201188 Unit and ISA\u201195 Unit scope (L2). Historian binding: dbms='enterprise_c', table='tff_1'."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "adef8e312f35646b4a49b614bf0fcb94",
+        "ledger": "global",
+        "name": "equipment",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/equipment",
+        "source_node": "Site1@localhost:32049",
+        "parent": "e37f3447ba04ce1490b261a40d715fd3",
+        "isa88": {
+          "entity": "EquipmentModule",
+          "standard": "ISA-88"
+        },
+        "isa95": {
+          "level": "L1-L2",
+          "entity": "Equipment",
+          "standard": "ISA-95"
+        },
+        "description": "Equipment branch for this Unit. Use this subtree to model physical assets and equipment modules (ISA\u201188 EquipmentModule) such as pumps, valves, sensors, skids, and controllers. Typical children could include asset identifiers, health/state, maintenance counters, and alarm summaries."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "50217abfc79e1dbe4a0158e7a7b1a83c",
+        "ledger": "global",
+        "name": "procedures",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures",
+        "source_node": "Site1@localhost:32049",
+        "parent": "e37f3447ba04ce1490b261a40d715fd3",
+        "isa88": {
+          "entity": "Procedure",
+          "standard": "ISA-88"
+        },
+        "isa95": {
+          "level": "L3-L2",
+          "entity": "ProcessSegment",
+          "standard": "ISA-95"
+        },
+        "description": "Procedural control branch (ISA\u201188). Organizes the executable control model for the unit into Unit Procedures \u2192 Operations \u2192 Phases. Use this subtree to standardize batch semantics, capture phase timing, and map control/SCADA events into consistent UNS paths."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "a437c6c9bf9510f8a3a778014336e894",
+        "ledger": "global",
+        "name": "prepare",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare",
+        "source_node": "Site1@localhost:32049",
+        "parent": "50217abfc79e1dbe4a0158e7a7b1a83c",
+        "display_name": "Prepare",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'prepare'. Represents a major stage of unit execution in ISA\u201188. Typical intent: prepare = ready equipment/materials and verify preconditions Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "8bf1475b53b0c02ae6e3266e2d9f3621",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "a437c6c9bf9510f8a3a778014336e894",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "415fad9badb6749a022471282120f631",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8bf1475b53b0c02ae6e3266e2d9f3621",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "a3f59321f134155ebf091ebedc54a749",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8bf1475b53b0c02ae6e3266e2d9f3621",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "1852a85a134b87de6d7b145a80b18efb",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8bf1475b53b0c02ae6e3266e2d9f3621",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "6defad8ee3a32c21c0c2ac6ee8383472",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "a437c6c9bf9510f8a3a778014336e894",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "01075467fbdc634ea1f4838c72cdbdc9",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6defad8ee3a32c21c0c2ac6ee8383472",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "f176bb96de6629f81acbd9e406cbfd75",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6defad8ee3a32c21c0c2ac6ee8383472",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "4b63254f970d497d186ef2566dd4959d",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6defad8ee3a32c21c0c2ac6ee8383472",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "ca1edccd855204ef404f00e2fc054534",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "a437c6c9bf9510f8a3a778014336e894",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "0e96267a14d80581032ea1edf5033206",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "ca1edccd855204ef404f00e2fc054534",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "c545c42f6cf9849cc9f7fcd49edafb52",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "ca1edccd855204ef404f00e2fc054534",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "4e18414e9b8122e6c13d6f7338c11e3b",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/prepare/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "ca1edccd855204ef404f00e2fc054534",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "148609734216ef632e44cf34a1a72940",
+        "ledger": "global",
+        "name": "run",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run",
+        "source_node": "Site1@localhost:32049",
+        "parent": "50217abfc79e1dbe4a0158e7a7b1a83c",
+        "display_name": "Run",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'run'. Represents a major stage of unit execution in ISA\u201188. Typical intent: run = execute the primary processing step(s) and collect critical process parameters Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "6fd49a247c953953bf60ed134877e26b",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "148609734216ef632e44cf34a1a72940",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "a5c89454c18e517c2ebdc984bb7ef7f2",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6fd49a247c953953bf60ed134877e26b",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "9894158f3183490dc9651ed80a1ee2b5",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6fd49a247c953953bf60ed134877e26b",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "f9cc858fb61e3e3780f44a8751bd1366",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6fd49a247c953953bf60ed134877e26b",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "90ddd2e3e9a8d2a247fe90ffd78ae43f",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "148609734216ef632e44cf34a1a72940",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "9def9c999710125f8e35c967810e920c",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "90ddd2e3e9a8d2a247fe90ffd78ae43f",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "fb9383ca0d986636a88898a76ae9f733",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "90ddd2e3e9a8d2a247fe90ffd78ae43f",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "5e29f7ad967c7da28e890203ed4add51",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "90ddd2e3e9a8d2a247fe90ffd78ae43f",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "6269d07b2705a7f0762f3ef39687ed5f",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "148609734216ef632e44cf34a1a72940",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "11a3608e10fa9fce5f5bc00668f61abb",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6269d07b2705a7f0762f3ef39687ed5f",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "9ada0acbf40359ab94d34274bbf715e7",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6269d07b2705a7f0762f3ef39687ed5f",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "b36c07fb6b4f41632237e8b73ebf84c7",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/run/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6269d07b2705a7f0762f3ef39687ed5f",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "996c916854ae77c2a13ab8f95e9349c4",
+        "ledger": "global",
+        "name": "cip",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip",
+        "source_node": "Site1@localhost:32049",
+        "parent": "50217abfc79e1dbe4a0158e7a7b1a83c",
+        "display_name": "CIP/SIP",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'cip'. Represents a major stage of unit execution in ISA\u201188. Typical intent: cip = clean/steam-in-place activities, post-run resets, and readiness for next batch Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "f1bf14157b5ba74e623034d02a3e28a7",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "996c916854ae77c2a13ab8f95e9349c4",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "758434575bbadc96810324be0a21b8b3",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "f1bf14157b5ba74e623034d02a3e28a7",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "8a1f283c19078fe6b17cee815d7df9b2",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "f1bf14157b5ba74e623034d02a3e28a7",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "400e369443e64cb507c9dadae6db210d",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "f1bf14157b5ba74e623034d02a3e28a7",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "93e8b94d655dcbe091c88f10e6444460",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "996c916854ae77c2a13ab8f95e9349c4",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "6155b64f9c0abbba0511e8e2c45ec435",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "93e8b94d655dcbe091c88f10e6444460",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "a47f82741b75df403533ad4a85672f4a",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "93e8b94d655dcbe091c88f10e6444460",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "05ca3249abbe337956a22d4fa39f4249",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "93e8b94d655dcbe091c88f10e6444460",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "6493503b84f2bb3cdfb122bb33fd52d4",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "996c916854ae77c2a13ab8f95e9349c4",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "2d75b585e0aaa2f887e1eed9d4b2de2a",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6493503b84f2bb3cdfb122bb33fd52d4",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "08c158c0ed0cdfb02c323b06625fe14f",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6493503b84f2bb3cdfb122bb33fd52d4",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "36988cbaa5aaf3701f1036ffdefa61be",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/procedures/cip/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "6493503b84f2bb3cdfb122bb33fd52d4",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "4e11304e241a894d8f315de00d487a08",
+        "ledger": "global",
+        "name": "production",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/production",
+        "source_node": "Site1@localhost:32049",
+        "parent": "e37f3447ba04ce1490b261a40d715fd3",
+        "isa95": {
+          "level": "L3",
+          "entity": "ProductionOperations",
+          "standard": "ISA-95"
+        },
+        "description": "Production operations branch (ISA\u201195). Use for L3-facing production objects: schedule, performance, and material consumption. This is where MES-style reporting and planning interfaces typically read/write."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "984b84508b1aabafa02a691f7cf2e476",
+        "ledger": "global",
+        "name": "schedule",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/production/schedule",
+        "source_node": "Site1@localhost:32049",
+        "parent": "4e11304e241a894d8f315de00d487a08",
+        "display_name": "ProductionSchedule",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "ProductionSchedule view. Store planned/active work orders, batch targets, start/end windows, and resource constraints for this unit. Link schedule items to batch IDs and recipe versions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "62be7b8d7ac68faabfa5b31e31ade2cf",
+        "ledger": "global",
+        "name": "performance",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/production/performance",
+        "source_node": "Site1@localhost:32049",
+        "parent": "4e11304e241a894d8f315de00d487a08",
+        "display_name": "ProductionPerformance",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "ProductionPerformance view. Store throughput, yield, cycle time, OEE-style metrics, and downtime categorization for this unit. Use consistent reason codes and rollups by batch/run."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "92f17365b62e8cd59d6134646b5b536e",
+        "ledger": "global",
+        "name": "material",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/production/material",
+        "source_node": "Site1@localhost:32049",
+        "parent": "4e11304e241a894d8f315de00d487a08",
+        "display_name": "MaterialConsumption",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "MaterialConsumption view. Store material genealogy, inputs/outputs, buffer lots, and consumption events. Link to lot numbers, COAs, and quality release status for end-to-end traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "8d96c9382a422b6de23af40b07590ea2",
+        "ledger": "global",
+        "name": "quality",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/quality",
+        "source_node": "Site1@localhost:32049",
+        "parent": "e37f3447ba04ce1490b261a40d715fd3",
+        "isa95": {
+          "level": "L3",
+          "entity": "QualityOperations",
+          "standard": "ISA-95"
+        },
+        "description": "Quality operations branch (ISA\u201195). Use for L3-facing quality objects: tests, specifications, and deviation management. This subtree supports compliance, release, and investigation workflows."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "370b8defb355da3559ec0a56217c6ed4",
+        "ledger": "global",
+        "name": "tests",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/quality/tests",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8d96c9382a422b6de23af40b07590ea2",
+        "display_name": "QualityTests",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "QualityTests view. Store in-process and release test results, sample IDs, timestamps, methods, and pass/fail outcomes. Link results to batch/run context and measurement sources."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "b54004ac9c3e7d0e2d9501d2553207c3",
+        "ledger": "global",
+        "name": "specs",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/quality/specs",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8d96c9382a422b6de23af40b07590ea2",
+        "display_name": "Specifications",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "Specifications view. Store target/spec limits and acceptance criteria (e.g., conductivity range, UV thresholds, pH). Prefer versioned specs tied to product and recipe version."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "5ec7241bf186a1b1995ce169fbe2c28f",
+        "ledger": "global",
+        "name": "deviations",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/tff/quality/deviations",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8d96c9382a422b6de23af40b07590ea2",
+        "display_name": "Deviations",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "Deviations view. Store deviations, investigations, CAPAs, and exception events. Link each deviation to the relevant batch/phase, affected parameters, disposition, and approvals."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "422997547e9a8ac376239b3d4e798461",
+        "ledger": "global",
+        "name": "chrom",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom",
+        "source_node": "Site1@localhost:32049",
+        "parent": "1ebff3339300b5b8208e759e2934bb53",
+        "dbms": "enterprise_c",
+        "table": "chrom_1",
+        "display_name": "Chromatography",
+        "isa95": {
+          "level": "L2",
+          "entity": "Unit",
+          "standard": "ISA-95"
+        },
+        "isa88": {
+          "entity": "Unit",
+          "standard": "ISA-88"
+        },
+        "tags": [
+          "oee",
+          "batch",
+          "quality",
+          "equipment"
+        ],
+        "description": "CHROM (Chromatography) unit. Represents column operations (equilibrate/load/wash/elute/strip). Use to track column ID, CVs, UV/cond/pH traces, fraction events, and yield/quality outcomes. This node is the canonical UNS address for the unit\u2019s operational data and context. It maps to ISA\u201188 Unit and ISA\u201195 Unit scope (L2). Historian binding: dbms='enterprise_c', table='chrom_1'."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "e833f20886891e2473f16cf90dc3155f",
+        "ledger": "global",
+        "name": "equipment",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/equipment",
+        "source_node": "Site1@localhost:32049",
+        "parent": "422997547e9a8ac376239b3d4e798461",
+        "isa88": {
+          "entity": "EquipmentModule",
+          "standard": "ISA-88"
+        },
+        "isa95": {
+          "level": "L1-L2",
+          "entity": "Equipment",
+          "standard": "ISA-95"
+        },
+        "description": "Equipment branch for this Unit. Use this subtree to model physical assets and equipment modules (ISA\u201188 EquipmentModule) such as pumps, valves, sensors, skids, and controllers. Typical children could include asset identifiers, health/state, maintenance counters, and alarm summaries."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "56cd98e4c7536df4b141aa66e36893b2",
+        "ledger": "global",
+        "name": "procedures",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures",
+        "source_node": "Site1@localhost:32049",
+        "parent": "422997547e9a8ac376239b3d4e798461",
+        "isa88": {
+          "entity": "Procedure",
+          "standard": "ISA-88"
+        },
+        "isa95": {
+          "level": "L3-L2",
+          "entity": "ProcessSegment",
+          "standard": "ISA-95"
+        },
+        "description": "Procedural control branch (ISA\u201188). Organizes the executable control model for the unit into Unit Procedures \u2192 Operations \u2192 Phases. Use this subtree to standardize batch semantics, capture phase timing, and map control/SCADA events into consistent UNS paths."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "59c33a0dbd3e1254fa90d3f93bb50a9d",
+        "ledger": "global",
+        "name": "prepare",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare",
+        "source_node": "Site1@localhost:32049",
+        "parent": "56cd98e4c7536df4b141aa66e36893b2",
+        "display_name": "Prepare",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'prepare'. Represents a major stage of unit execution in ISA\u201188. Typical intent: prepare = ready equipment/materials and verify preconditions Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "83ab33a36afb141af056a875996d56e5",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "59c33a0dbd3e1254fa90d3f93bb50a9d",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "77164c72f727ed4baa6180ca6af39872",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "83ab33a36afb141af056a875996d56e5",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "2b95226a3db8645cab03db93ab875714",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "83ab33a36afb141af056a875996d56e5",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "283ff747bf428494f247629e4314650d",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "83ab33a36afb141af056a875996d56e5",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "8bc701ce98db9c0229d05712460f5fad",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "59c33a0dbd3e1254fa90d3f93bb50a9d",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "bd5109460a0c41819be6e21c9838f9a7",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8bc701ce98db9c0229d05712460f5fad",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "0c7963390e452ee828ea4ff2b592378f",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8bc701ce98db9c0229d05712460f5fad",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "b2da8012fbcb11cb88fb8787e90dc44a",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8bc701ce98db9c0229d05712460f5fad",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "cb2a371cfac7e10b93f5d9e157fd1116",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "59c33a0dbd3e1254fa90d3f93bb50a9d",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "2a52f7c9f03deb8fc393da130623e421",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "cb2a371cfac7e10b93f5d9e157fd1116",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "c74a2aacc28fa15a976ac88bace5fc53",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "cb2a371cfac7e10b93f5d9e157fd1116",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "c2c90b620519fbd970a5801ed4f8f9d8",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/prepare/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "cb2a371cfac7e10b93f5d9e157fd1116",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "39fb01f70f2f0bc41e58aa9c540c5413",
+        "ledger": "global",
+        "name": "run",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run",
+        "source_node": "Site1@localhost:32049",
+        "parent": "56cd98e4c7536df4b141aa66e36893b2",
+        "display_name": "Run",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'run'. Represents a major stage of unit execution in ISA\u201188. Typical intent: run = execute the primary processing step(s) and collect critical process parameters Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "03240ccedd359ce35672c722a89a76fa",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "39fb01f70f2f0bc41e58aa9c540c5413",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "6d960cf81a56f9047c5b4aae1969d5c9",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "03240ccedd359ce35672c722a89a76fa",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "38dbee320ed54f0be62840407df5984f",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "03240ccedd359ce35672c722a89a76fa",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "f4629d352ab91eefab401e14b37e5b3d",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "03240ccedd359ce35672c722a89a76fa",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "d592cdd848c7a14cbafe01e90fc34a9d",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "39fb01f70f2f0bc41e58aa9c540c5413",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "72e5d878a49c716aab98945a30e95d1c",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "d592cdd848c7a14cbafe01e90fc34a9d",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "2cc2a45543bdb2b6545f40397f17ecc4",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "d592cdd848c7a14cbafe01e90fc34a9d",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "5a66cac88692355b90c982c07fd7dc91",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "d592cdd848c7a14cbafe01e90fc34a9d",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "530b6bddcee2c2cd9e210ebb4fc6dbc6",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "39fb01f70f2f0bc41e58aa9c540c5413",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "04cacee56e4d439c3a1911149f37e10b",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "530b6bddcee2c2cd9e210ebb4fc6dbc6",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "95dc88ef3c9e16577a65bd21a7cd3f45",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "530b6bddcee2c2cd9e210ebb4fc6dbc6",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "d6af7c91cf7cfeba6f5021efcacbdafe",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/run/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "530b6bddcee2c2cd9e210ebb4fc6dbc6",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "c26e44d50798fbd56ca9c1cb98b608a2",
+        "ledger": "global",
+        "name": "cip",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip",
+        "source_node": "Site1@localhost:32049",
+        "parent": "56cd98e4c7536df4b141aa66e36893b2",
+        "display_name": "CIP/SIP",
+        "isa88": {
+          "entity": "UnitProcedure",
+          "standard": "ISA-88"
+        },
+        "description": "Unit Procedure 'cip'. Represents a major stage of unit execution in ISA\u201188. Typical intent: cip = clean/steam-in-place activities, post-run resets, and readiness for next batch Use children Operations/Phases to record detailed control steps, durations, and reasons for holds/stops."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "228de7241bbfa0ea2d81ef3c789c0d70",
+        "ledger": "global",
+        "name": "start",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/start",
+        "source_node": "Site1@localhost:32049",
+        "parent": "c26e44d50798fbd56ca9c1cb98b608a2",
+        "display_name": "Start",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'start'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "d553e60908b263426bc560957a557abc",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/start/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "228de7241bbfa0ea2d81ef3c789c0d70",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "d4eb8735ecf3e08265eba50f27ee3071",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/start/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "228de7241bbfa0ea2d81ef3c789c0d70",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "97ab91e8d962905977592d1b322c3d64",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/start/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "228de7241bbfa0ea2d81ef3c789c0d70",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "8aa64bbfea646c05716a146751d12719",
+        "ledger": "global",
+        "name": "control",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/control",
+        "source_node": "Site1@localhost:32049",
+        "parent": "c26e44d50798fbd56ca9c1cb98b608a2",
+        "display_name": "Control",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'control'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "7c6f8d56b2b65054fa415ead36b945dd",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/control/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8aa64bbfea646c05716a146751d12719",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "be2cf12d248f40ff39bcca8d1f6b1a3e",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/control/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8aa64bbfea646c05716a146751d12719",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "cd6bf93dbf8c922739c06081a289702e",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/control/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "8aa64bbfea646c05716a146751d12719",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "ec3316506016d1e6b32158966f70c4cb",
+        "ledger": "global",
+        "name": "stop",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/stop",
+        "source_node": "Site1@localhost:32049",
+        "parent": "c26e44d50798fbd56ca9c1cb98b608a2",
+        "display_name": "Stop",
+        "isa88": {
+          "entity": "Operation",
+          "standard": "ISA-88"
+        },
+        "description": "Operation 'stop'. Groups a set of Phases that achieve a specific objective within a Unit Procedure (ISA\u201188). Typical meaning: start = initialization/bring-up; control = steady-state/regulation; stop = shutdown/transition. Use this node to summarize operation-level timing, status, and exceptions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "6a6e5ab2191d3144f7eddf4852185d63",
+        "ledger": "global",
+        "name": "setpoints",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/stop/setpoints",
+        "source_node": "Site1@localhost:32049",
+        "parent": "ec3316506016d1e6b32158966f70c4cb",
+        "display_name": "Setpoints",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: setpoints. Store target values/recipes here (e.g., flow rate, pressure limits, CV targets). Prefer versioned recipe references and capture who/what changed a setpoint and when."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "36944b47916ab62e723e04d01c39c9d8",
+        "ledger": "global",
+        "name": "measurements",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/stop/measurements",
+        "source_node": "Site1@localhost:32049",
+        "parent": "ec3316506016d1e6b32158966f70c4cb",
+        "display_name": "Measurements",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: measurements. Store time-series signals and calculated KPIs here (e.g., UV, pH, TMP, conductivity, yield). Use consistent units and include quality flags for sensor health."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "747c1b1441fadb92ca8c9a57f4ea11bf",
+        "ledger": "global",
+        "name": "alarms",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/procedures/cip/stop/alarms",
+        "source_node": "Site1@localhost:32049",
+        "parent": "ec3316506016d1e6b32158966f70c4cb",
+        "display_name": "Alarms",
+        "isa88": {
+          "entity": "Phase",
+          "standard": "ISA-88"
+        },
+        "description": "Phase category: alarms. Store event/alert streams here (e.g., high TMP, low flow, UV spike). Include severity, acknowledge info, and links back to the active batch/phase for traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "c2ae6514754253168696dec45317b033",
+        "ledger": "global",
+        "name": "production",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/production",
+        "source_node": "Site1@localhost:32049",
+        "parent": "422997547e9a8ac376239b3d4e798461",
+        "isa95": {
+          "level": "L3",
+          "entity": "ProductionOperations",
+          "standard": "ISA-95"
+        },
+        "description": "Production operations branch (ISA\u201195). Use for L3-facing production objects: schedule, performance, and material consumption. This is where MES-style reporting and planning interfaces typically read/write."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "e6bedf3e13aa22e1c868b3a30b68d29e",
+        "ledger": "global",
+        "name": "schedule",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/production/schedule",
+        "source_node": "Site1@localhost:32049",
+        "parent": "c2ae6514754253168696dec45317b033",
+        "display_name": "ProductionSchedule",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "ProductionSchedule view. Store planned/active work orders, batch targets, start/end windows, and resource constraints for this unit. Link schedule items to batch IDs and recipe versions."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "98485961c44443c13c074008e405ebc4",
+        "ledger": "global",
+        "name": "performance",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/production/performance",
+        "source_node": "Site1@localhost:32049",
+        "parent": "c2ae6514754253168696dec45317b033",
+        "display_name": "ProductionPerformance",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "ProductionPerformance view. Store throughput, yield, cycle time, OEE-style metrics, and downtime categorization for this unit. Use consistent reason codes and rollups by batch/run."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "472b5154899692d406ae8a34d998c894",
+        "ledger": "global",
+        "name": "material",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/production/material",
+        "source_node": "Site1@localhost:32049",
+        "parent": "c2ae6514754253168696dec45317b033",
+        "display_name": "MaterialConsumption",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "MaterialConsumption view. Store material genealogy, inputs/outputs, buffer lots, and consumption events. Link to lot numbers, COAs, and quality release status for end-to-end traceability."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "dae3d78b24c716a179885646f3c90f10",
+        "ledger": "global",
+        "name": "quality",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/quality",
+        "source_node": "Site1@localhost:32049",
+        "parent": "422997547e9a8ac376239b3d4e798461",
+        "isa95": {
+          "level": "L3",
+          "entity": "QualityOperations",
+          "standard": "ISA-95"
+        },
+        "description": "Quality operations branch (ISA\u201195). Use for L3-facing quality objects: tests, specifications, and deviation management. This subtree supports compliance, release, and investigation workflows."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "ddbb4e31588b5ccab259fc7de5ab33fb",
+        "ledger": "global",
+        "name": "tests",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/quality/tests",
+        "source_node": "Site1@localhost:32049",
+        "parent": "dae3d78b24c716a179885646f3c90f10",
+        "display_name": "QualityTests",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "QualityTests view. Store in-process and release test results, sample IDs, timestamps, methods, and pass/fail outcomes. Link results to batch/run context and measurement sources."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "65bd2970c5ddf63ca9feb78a5c85be4b",
+        "ledger": "global",
+        "name": "specs",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/quality/specs",
+        "source_node": "Site1@localhost:32049",
+        "parent": "dae3d78b24c716a179885646f3c90f10",
+        "display_name": "Specifications",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "Specifications view. Store target/spec limits and acceptance criteria (e.g., conductivity range, UV thresholds, pH). Prefer versioned specs tied to product and recipe version."
+      }
+    },
+    {
+      "uns": {
+        "date": "2026-02-14T05:51:00.313993Z",
+        "id": "4adb748b568cb3891ebf69953f5efc6a",
+        "ledger": "global",
+        "name": "deviations",
+        "namespace": "Enterprise_C/Site1/Bioprocessing/DSP_ProcessCell/chrom/quality/deviations",
+        "source_node": "Site1@localhost:32049",
+        "parent": "dae3d78b24c716a179885646f3c90f10",
+        "display_name": "Deviations",
+        "isa95": {
+          "standard": "ISA-95"
+        },
+        "description": "Deviations view. Store deviations, investigations, CAPAs, and exception events. Link each deviation to the relevant batch/phase, affected parameters, disposition, and approvals."
+      }
     }
-  },
-  {
-    "uns": {
-      "name": "mS",
-      "namespace": "Enterprise_C/tff/CM/mS",
-      "uns_level": "sensor",
-      "parent": "de0c7b041e897eb8d0192613a8a93a41",
-      "dbms": "manufacturing_historian",
-      "table": "tff_cm",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Conductivity process value in milliSiemens (integer)"
-    }
-  },
-  {
-    "uns": {
-      "name": "monitoring",
-      "namespace": "Enterprise_C/monitoring",
-      "uns_level": "namespace",
-      "parent": "b992dcf093661dc3dc966c6a420ac816",
-      "dbms": "monitoring",
-      "table": "monitoring",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Node health and container telemetry for the Enterprise C historian operator"
-    }
-  },
-  {
-    "uns": {
-      "name": "node_insight",
-      "namespace": "Enterprise_C/monitoring/node_insight",
-      "uns_level": "device",
-      "parent": "0c84f9823ee876c9b1f479563d4c1214",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "AnyLog operator node self-monitoring \u2014 row throughput, errors, uptime, system resources"
-    }
-  },
-  {
-    "uns": {
-      "name": "CPU_percent",
-      "namespace": "Enterprise_C/monitoring/node_insight/CPU_percent",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "CPU utilisation in percent (float)"
-    }
-  },
-  {
-    "uns": {
-      "name": "free_space_pct",
-      "namespace": "Enterprise_C/monitoring/node_insight/free_space_pct",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Disk free space as percentage (float)"
-    }
-  },
-  {
-    "uns": {
-      "name": "packets_recv",
-      "namespace": "Enterprise_C/monitoring/node_insight/packets_recv",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Network packets received per interval (int)"
-    }
-  },
-  {
-    "uns": {
-      "name": "packets_sent",
-      "namespace": "Enterprise_C/monitoring/node_insight/packets_sent",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Network packets sent per interval (int)"
-    }
-  },
-  {
-    "uns": {
-      "name": "network_error",
-      "namespace": "Enterprise_C/monitoring/node_insight/network_error",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Cumulative network error count (int)"
-    }
-  },
-  {
-    "uns": {
-      "name": "new_rows",
-      "namespace": "Enterprise_C/monitoring/node_insight/new_rows",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "New data rows ingested since last sample (int)"
-    }
-  },
-  {
-    "uns": {
-      "name": "total_rows",
-      "namespace": "Enterprise_C/monitoring/node_insight/total_rows",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Total rows stored by this operator (int)"
-    }
-  },
-  {
-    "uns": {
-      "name": "new_errors",
-      "namespace": "Enterprise_C/monitoring/node_insight/new_errors",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "New operator errors since last sample (int)"
-    }
-  },
-  {
-    "uns": {
-      "name": "avg_rows_sec",
-      "namespace": "Enterprise_C/monitoring/node_insight/avg_rows_sec",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Average ingestion rate in rows per second (float)"
-    }
-  },
-  {
-    "uns": {
-      "name": "status",
-      "namespace": "Enterprise_C/monitoring/node_insight/status",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Operator status string (Active/Idle/Error)"
-    }
-  },
-  {
-    "uns": {
-      "name": "node_type",
-      "namespace": "Enterprise_C/monitoring/node_insight/node_type",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "AnyLog node role, e.g. operator (char 9)"
-    }
-  },
-  {
-    "uns": {
-      "name": "operational_time",
-      "namespace": "Enterprise_C/monitoring/node_insight/operational_time",
-      "uns_level": "sensor",
-      "parent": "254f893c293d0380679acedb0e40d3c5",
-      "dbms": "monitoring",
-      "table": "node_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Cumulative operational uptime (TIME HH:MM:SS)"
-    }
-  },
-  {
-    "uns": {
-      "name": "docker_insight",
-      "namespace": "Enterprise_C/monitoring/docker_insight",
-      "uns_level": "device",
-      "parent": "0c84f9823ee876c9b1f479563d4c1214",
-      "dbms": "monitoring",
-      "table": "docker_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Docker container-level resource metrics for all containers on the historian host"
-    }
-  },
-  {
-    "uns": {
-      "name": "container",
-      "namespace": "Enterprise_C/monitoring/docker_insight/container",
-      "uns_level": "sensor",
-      "parent": "5a041e903e2c273a976ee5a0f5d664e6",
-      "dbms": "monitoring",
-      "table": "docker_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Container name / image identifier (varchar)"
-    }
-  },
-  {
-    "uns": {
-      "name": "cpu_usage",
-      "namespace": "Enterprise_C/monitoring/docker_insight/cpu_usage",
-      "uns_level": "sensor",
-      "parent": "5a041e903e2c273a976ee5a0f5d664e6",
-      "dbms": "monitoring",
-      "table": "docker_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Container CPU utilisation in percent (float)"
-    }
-  },
-  {
-    "uns": {
-      "name": "memory_usage_bytes",
-      "namespace": "Enterprise_C/monitoring/docker_insight/memory_usage_bytes",
-      "uns_level": "sensor",
-      "parent": "5a041e903e2c273a976ee5a0f5d664e6",
-      "dbms": "monitoring",
-      "table": "docker_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Container RSS memory in bytes (bigint)"
-    }
-  },
-  {
-    "uns": {
-      "name": "disk_read_bytes",
-      "namespace": "Enterprise_C/monitoring/docker_insight/disk_read_bytes",
-      "uns_level": "sensor",
-      "parent": "5a041e903e2c273a976ee5a0f5d664e6",
-      "dbms": "monitoring",
-      "table": "docker_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Cumulative disk read bytes for the container (bigint)"
-    }
-  },
-  {
-    "uns": {
-      "name": "disk_write_bytes",
-      "namespace": "Enterprise_C/monitoring/docker_insight/disk_write_bytes",
-      "uns_level": "sensor",
-      "parent": "5a041e903e2c273a976ee5a0f5d664e6",
-      "dbms": "monitoring",
-      "table": "docker_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Cumulative disk write bytes for the container (bigint)"
-    }
-  },
-  {
-    "uns": {
-      "name": "network_rx_packets",
-      "namespace": "Enterprise_C/monitoring/docker_insight/network_rx_packets",
-      "uns_level": "sensor",
-      "parent": "5a041e903e2c273a976ee5a0f5d664e6",
-      "dbms": "monitoring",
-      "table": "docker_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Network packets received by the container (int)"
-    }
-  },
-  {
-    "uns": {
-      "name": "network_tx_packets",
-      "namespace": "Enterprise_C/monitoring/docker_insight/network_tx_packets",
-      "uns_level": "sensor",
-      "parent": "5a041e903e2c273a976ee5a0f5d664e6",
-      "dbms": "monitoring",
-      "table": "docker_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Network packets transmitted by the container (int)"
-    }
-  },
-  {
-    "uns": {
-      "name": "uptime",
-      "namespace": "Enterprise_C/monitoring/docker_insight/uptime",
-      "uns_level": "sensor",
-      "parent": "5a041e903e2c273a976ee5a0f5d664e6",
-      "dbms": "monitoring",
-      "table": "docker_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Container uptime since last start (TIME)"
-    }
-  },
-  {
-    "uns": {
-      "name": "hostname",
-      "namespace": "Enterprise_C/monitoring/docker_insight/hostname",
-      "uns_level": "sensor",
-      "parent": "5a041e903e2c273a976ee5a0f5d664e6",
-      "dbms": "monitoring",
-      "table": "docker_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Host node name where container runs (char 6)"
-    }
-  },
-  {
-    "uns": {
-      "name": "start_time",
-      "namespace": "Enterprise_C/monitoring/docker_insight/start_time",
-      "uns_level": "sensor",
-      "parent": "5a041e903e2c273a976ee5a0f5d664e6",
-      "dbms": "monitoring",
-      "table": "docker_insight",
-      "source_node": "historian@50.116.13.109:32158",
-      "description": "Container start timestamp (char 5 HH:MM)"
-    }
-  }
-]
+  ]
+}
