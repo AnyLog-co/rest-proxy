@@ -554,46 +554,746 @@
 "use strict";
 
 // ═══════════════════════════════════════════════════════════
-// UNS MAP  — sourced from dynics-proveit MCP blockchain query
-// Namespace → bottle_factory table mapping
+// UNS MAP  — sourced from anylog-proveit MCP blockchain query
+// Every 'metric' node = OEE for that level.
+// workorder/lotnumber/item included where present in UNS.
+// Last synced: 2026-02-15 via anylog-proveit MCP (listPolicies uns)
 // ═══════════════════════════════════════════════════════════
 const UNS = {
-  // Enterprise_B/Metric
-  enterprise: { dbms: 'bottle_factory', table: 'metric_64' },
+  // ── Enterprise level
+  enterprise: {  // Enterprise_B
+    metric: { dbms: 'bottle_factory', table: 'metric_64' },  // Enterprise_B/Metric
+  },
 
   sites: {
+    // ── Site1
     Site1: {
-      // Enterprise_B/Site1/metric
-      metric: { dbms: 'bottle_factory', table: 'metric_11' },
+      metric: { dbms: 'bottle_factory', table: 'metric_11' },  // Enterprise_B/Site1/metric
       processes: {
-        fillerproduction: { dbms: 'bottle_factory', table: 'metric_52' },  // Enterprise_B/Site1/fillerproduction/metric
-        liquidprocessing: { dbms: 'bottle_factory', table: 'metric_9'  },  // Enterprise_B/Site1/liquidprocessing/metric
-        packaging:        { dbms: 'bottle_factory', table: 'metric_27' },  // Enterprise_B/Site1/packaging/metric
-        palletizing:      { dbms: 'bottle_factory', table: 'metric_20' },  // Enterprise_B/Site1/palletizing/metric
-      }
+        // ── Site1/fillerproduction
+        fillerproduction: {
+          metric: { dbms: 'bottle_factory', table: 'metric_52' },  // Enterprise_B/Site1/fillerproduction/metric
+          assets: {
+            // Enterprise_B/Site1/fillerproduction/fillingline01
+            fillingline01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_28' },  // Enterprise_B/Site1/fillerproduction/fillingline01/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_1' },  // Enterprise_B/Site1/fillerproduction/fillingline01/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_1' },  // Enterprise_B/Site1/fillerproduction/fillingline01/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_1' },  // Enterprise_B/Site1/fillerproduction/fillingline01/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site1/fillerproduction/fillingline01/caploader
+                caploader: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_60' },  // Enterprise_B/Site1/fillerproduction/fillingline01/caploader/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_43' },  // Enterprise_B/Site1/fillerproduction/fillingline01/caploader/processdata
+                },
+                // Enterprise_B/Site1/fillerproduction/fillingline01/filler
+                filler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_10' },  // Enterprise_B/Site1/fillerproduction/fillingline01/filler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_29' },  // Enterprise_B/Site1/fillerproduction/fillingline01/filler/processdata
+                },
+                // Enterprise_B/Site1/fillerproduction/fillingline01/washer
+                washer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_62' },  // Enterprise_B/Site1/fillerproduction/fillingline01/washer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_28' },  // Enterprise_B/Site1/fillerproduction/fillingline01/washer/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site1/fillerproduction/fillingline02
+            fillingline02: {
+              metric: { dbms: 'bottle_factory', table: 'metric_55' },  // Enterprise_B/Site1/fillerproduction/fillingline02/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_4' },  // Enterprise_B/Site1/fillerproduction/fillingline02/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_5' },  // Enterprise_B/Site1/fillerproduction/fillingline02/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_4' },  // Enterprise_B/Site1/fillerproduction/fillingline02/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site1/fillerproduction/fillingline02/caploader
+                caploader: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_45' },  // Enterprise_B/Site1/fillerproduction/fillingline02/caploader/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_23' },  // Enterprise_B/Site1/fillerproduction/fillingline02/caploader/processdata
+                },
+                // Enterprise_B/Site1/fillerproduction/fillingline02/filler
+                filler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_53' },  // Enterprise_B/Site1/fillerproduction/fillingline02/filler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_33' },  // Enterprise_B/Site1/fillerproduction/fillingline02/filler/processdata
+                },
+                // Enterprise_B/Site1/fillerproduction/fillingline02/washer
+                washer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_32' },  // Enterprise_B/Site1/fillerproduction/fillingline02/washer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_14' },  // Enterprise_B/Site1/fillerproduction/fillingline02/washer/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site1/fillerproduction/fillingline03
+            fillingline03: {
+              metric: { dbms: 'bottle_factory', table: 'metric_1' },  // Enterprise_B/Site1/fillerproduction/fillingline03/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_6' },  // Enterprise_B/Site1/fillerproduction/fillingline03/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_8' },  // Enterprise_B/Site1/fillerproduction/fillingline03/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_8' },  // Enterprise_B/Site1/fillerproduction/fillingline03/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site1/fillerproduction/fillingline03/caploader
+                caploader: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_12' },  // Enterprise_B/Site1/fillerproduction/fillingline03/caploader/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_40' },  // Enterprise_B/Site1/fillerproduction/fillingline03/caploader/processdata
+                },
+                // Enterprise_B/Site1/fillerproduction/fillingline03/filler
+                filler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_49' },  // Enterprise_B/Site1/fillerproduction/fillingline03/filler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_6' },  // Enterprise_B/Site1/fillerproduction/fillingline03/filler/processdata
+                },
+                // Enterprise_B/Site1/fillerproduction/fillingline03/washer
+                washer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_57' },  // Enterprise_B/Site1/fillerproduction/fillingline03/washer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_39' },  // Enterprise_B/Site1/fillerproduction/fillingline03/washer/processdata
+                },
+              },
+            },
+          },
+        },
+        // ── Site1/liquidprocessing
+        liquidprocessing: {
+          metric: { dbms: 'bottle_factory', table: 'metric_9' },  // Enterprise_B/Site1/liquidprocessing/metric
+          assets: {
+            // Enterprise_B/Site1/liquidprocessing/mixroom01
+            mixroom01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_17' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/metric
+              assets: {
+                // Enterprise_B/Site1/liquidprocessing/mixroom01/vat01
+                vat01: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_3' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat01/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_25' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat01/processdata
+                  workorder: { dbms: 'bottle_factory', table: 'workorder_3' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat01/workorder
+                  workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_4' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat01/workorder/lotnumber
+                  workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_3' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat01/workorder/lotnumber/item
+                },
+                // Enterprise_B/Site1/liquidprocessing/mixroom01/vat02
+                vat02: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_6' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat02/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_16' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat02/processdata
+                  workorder: { dbms: 'bottle_factory', table: 'workorder_5' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat02/workorder
+                  workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_6' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat02/workorder/lotnumber
+                  workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_5' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat02/workorder/lotnumber/item
+                },
+                // Enterprise_B/Site1/liquidprocessing/mixroom01/vat03
+                vat03: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_41' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat03/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_26' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat03/processdata
+                  workorder: { dbms: 'bottle_factory', table: 'workorder_9' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat03/workorder
+                  workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_14' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat03/workorder/lotnumber
+                  workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_14' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat03/workorder/lotnumber/item
+                },
+                // Enterprise_B/Site1/liquidprocessing/mixroom01/vat04
+                vat04: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_4' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat04/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_24' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat04/processdata
+                  workorder: { dbms: 'bottle_factory', table: 'workorder_2' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat04/workorder
+                  workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_2' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat04/workorder/lotnumber
+                  workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_2' },  // Enterprise_B/Site1/liquidprocessing/mixroom01/vat04/workorder/lotnumber/item
+                },
+              },
+            },
+            // Enterprise_B/Site1/liquidprocessing/tankstorage01
+            tankstorage01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_15' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/metric
+              assets: {
+                // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank01
+                tank01: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_35' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank01/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_11' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank01/processdata
+                  lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_10' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank01/lotnumber
+                  lotnumber_item: { dbms: 'bottle_factory', table: 'item_10' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank01/lotnumber/item
+                },
+                // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank02
+                tank02: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_31' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank02/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_37' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank02/processdata
+                  lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_3' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank02/lotnumber
+                  lotnumber_item: { dbms: 'bottle_factory', table: 'item_6' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank02/lotnumber/item
+                },
+                // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank03
+                tank03: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_47' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank03/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_9' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank03/processdata
+                  lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_7' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank03/lotnumber
+                  lotnumber_item: { dbms: 'bottle_factory', table: 'item_7' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank03/lotnumber/item
+                },
+                // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank04
+                tank04: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_36' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank04/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_31' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank04/processdata
+                  lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_11' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank04/lotnumber
+                  lotnumber_item: { dbms: 'bottle_factory', table: 'item_11' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank04/lotnumber/item
+                },
+                // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank05
+                tank05: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_14' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank05/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_3' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank05/processdata
+                  lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_12' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank05/lotnumber
+                  lotnumber_item: { dbms: 'bottle_factory', table: 'item_12' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank05/lotnumber/item
+                },
+                // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank06
+                tank06: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_37' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank06/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_2' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank06/processdata
+                  lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_16' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank06/lotnumber
+                  lotnumber_item: { dbms: 'bottle_factory', table: 'item_17' },  // Enterprise_B/Site1/liquidprocessing/tankstorage01/tank06/lotnumber/item
+                },
+              },
+            },
+          },
+        },
+        // ── Site1/packaging
+        packaging: {
+          metric: { dbms: 'bottle_factory', table: 'metric_27' },  // Enterprise_B/Site1/packaging/metric
+          assets: {
+            // Enterprise_B/Site1/packaging/labelerline01
+            labelerline01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_23' },  // Enterprise_B/Site1/packaging/labelerline01/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_11' },  // Enterprise_B/Site1/packaging/labelerline01/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_17' },  // Enterprise_B/Site1/packaging/labelerline01/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_16' },  // Enterprise_B/Site1/packaging/labelerline01/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site1/packaging/labelerline01/labeler
+                labeler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_2' },  // Enterprise_B/Site1/packaging/labelerline01/labeler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_36' },  // Enterprise_B/Site1/packaging/labelerline01/labeler/processdata
+                },
+                // Enterprise_B/Site1/packaging/labelerline01/packager
+                packager: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_38' },  // Enterprise_B/Site1/packaging/labelerline01/packager/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_5' },  // Enterprise_B/Site1/packaging/labelerline01/packager/processdata
+                },
+                // Enterprise_B/Site1/packaging/labelerline01/sealer
+                sealer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_16' },  // Enterprise_B/Site1/packaging/labelerline01/sealer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_42' },  // Enterprise_B/Site1/packaging/labelerline01/sealer/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site1/packaging/labelerline02
+            labelerline02: {
+              metric: { dbms: 'bottle_factory', table: 'metric_63' },  // Enterprise_B/Site1/packaging/labelerline02/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_10' },  // Enterprise_B/Site1/packaging/labelerline02/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_15' },  // Enterprise_B/Site1/packaging/labelerline02/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_15' },  // Enterprise_B/Site1/packaging/labelerline02/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site1/packaging/labelerline02/labeler
+                labeler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_48' },  // Enterprise_B/Site1/packaging/labelerline02/labeler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_17' },  // Enterprise_B/Site1/packaging/labelerline02/labeler/processdata
+                },
+                // Enterprise_B/Site1/packaging/labelerline02/packager
+                packager: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_18' },  // Enterprise_B/Site1/packaging/labelerline02/packager/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_12' },  // Enterprise_B/Site1/packaging/labelerline02/packager/processdata
+                },
+                // Enterprise_B/Site1/packaging/labelerline02/sealer
+                sealer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_22' },  // Enterprise_B/Site1/packaging/labelerline02/sealer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_15' },  // Enterprise_B/Site1/packaging/labelerline02/sealer/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site1/packaging/labelerline03
+            labelerline03: {
+              metric: { dbms: 'bottle_factory', table: 'metric_33' },  // Enterprise_B/Site1/packaging/labelerline03/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_7' },  // Enterprise_B/Site1/packaging/labelerline03/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_9' },  // Enterprise_B/Site1/packaging/labelerline03/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_9' },  // Enterprise_B/Site1/packaging/labelerline03/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site1/packaging/labelerline03/labeler
+                labeler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_5' },  // Enterprise_B/Site1/packaging/labelerline03/labeler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_41' },  // Enterprise_B/Site1/packaging/labelerline03/labeler/processdata
+                },
+                // Enterprise_B/Site1/packaging/labelerline03/packager
+                packager: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_26' },  // Enterprise_B/Site1/packaging/labelerline03/packager/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_30' },  // Enterprise_B/Site1/packaging/labelerline03/packager/processdata
+                },
+                // Enterprise_B/Site1/packaging/labelerline03/sealer
+                sealer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_8' },  // Enterprise_B/Site1/packaging/labelerline03/sealer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_18' },  // Enterprise_B/Site1/packaging/labelerline03/sealer/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site1/packaging/labelerline04
+            labelerline04: {
+              metric: { dbms: 'bottle_factory', table: 'metric_34' },  // Enterprise_B/Site1/packaging/labelerline04/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_8' },  // Enterprise_B/Site1/packaging/labelerline04/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_13' },  // Enterprise_B/Site1/packaging/labelerline04/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_13' },  // Enterprise_B/Site1/packaging/labelerline04/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site1/packaging/labelerline04/labeler
+                labeler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_50' },  // Enterprise_B/Site1/packaging/labelerline04/labeler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_34' },  // Enterprise_B/Site1/packaging/labelerline04/labeler/processdata
+                },
+                // Enterprise_B/Site1/packaging/labelerline04/packager
+                packager: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_40' },  // Enterprise_B/Site1/packaging/labelerline04/packager/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_35' },  // Enterprise_B/Site1/packaging/labelerline04/packager/processdata
+                },
+                // Enterprise_B/Site1/packaging/labelerline04/sealer
+                sealer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_54' },  // Enterprise_B/Site1/packaging/labelerline04/sealer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_27' },  // Enterprise_B/Site1/packaging/labelerline04/sealer/processdata
+                },
+              },
+            },
+          },
+        },
+        // ── Site1/palletizing
+        palletizing: {
+          metric: { dbms: 'bottle_factory', table: 'metric_20' },  // Enterprise_B/Site1/palletizing/metric
+          assets: {
+            // Enterprise_B/Site1/palletizing/palletizer01
+            palletizer01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_39' },  // Enterprise_B/Site1/palletizing/palletizer01/metric
+              assets: {
+                // Enterprise_B/Site1/palletizing/palletizer01/pallet01
+                pallet01: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_42' },  // Enterprise_B/Site1/palletizing/palletizer01/pallet01/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_20' },  // Enterprise_B/Site1/palletizing/palletizer01/pallet01/processdata
+                },
+                // Enterprise_B/Site1/palletizing/palletizer01/pallet02
+                pallet02: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_44' },  // Enterprise_B/Site1/palletizing/palletizer01/pallet02/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_4' },  // Enterprise_B/Site1/palletizing/palletizer01/pallet02/processdata
+                },
+                // Enterprise_B/Site1/palletizing/palletizer01/robot
+                robot: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_59' },  // Enterprise_B/Site1/palletizing/palletizer01/robot/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_19' },  // Enterprise_B/Site1/palletizing/palletizer01/robot/processdata
+                },
+                // Enterprise_B/Site1/palletizing/palletizer01/wrapper
+                wrapper: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_19' },  // Enterprise_B/Site1/palletizing/palletizer01/wrapper/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_22' },  // Enterprise_B/Site1/palletizing/palletizer01/wrapper/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site1/palletizing/palletizer02
+            palletizer02: {
+              metric: { dbms: 'bottle_factory', table: 'metric_46' },  // Enterprise_B/Site1/palletizing/palletizer02/metric
+              assets: {
+                // Enterprise_B/Site1/palletizing/palletizer02/pallet01
+                pallet01: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_30' },  // Enterprise_B/Site1/palletizing/palletizer02/pallet01/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_1' },  // Enterprise_B/Site1/palletizing/palletizer02/pallet01/processdata
+                },
+                // Enterprise_B/Site1/palletizing/palletizer02/pallet02
+                pallet02: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_25' },  // Enterprise_B/Site1/palletizing/palletizer02/pallet02/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_21' },  // Enterprise_B/Site1/palletizing/palletizer02/pallet02/processdata
+                },
+                // Enterprise_B/Site1/palletizing/palletizer02/robot
+                robot: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_7' },  // Enterprise_B/Site1/palletizing/palletizer02/robot/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_8' },  // Enterprise_B/Site1/palletizing/palletizer02/robot/processdata
+                },
+                // Enterprise_B/Site1/palletizing/palletizer02/wrapper
+                wrapper: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_43' },  // Enterprise_B/Site1/palletizing/palletizer02/wrapper/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_38' },  // Enterprise_B/Site1/palletizing/palletizer02/wrapper/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site1/palletizing/palletizermanual01
+            palletizermanual01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_24' },  // Enterprise_B/Site1/palletizing/palletizermanual01/metric
+              assets: {
+                // Enterprise_B/Site1/palletizing/palletizermanual01/workstation
+                workstation: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_13' },  // Enterprise_B/Site1/palletizing/palletizermanual01/workstation/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_32' },  // Enterprise_B/Site1/palletizing/palletizermanual01/workstation/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site1/palletizing/palletizermanual02
+            palletizermanual02: {
+              metric: { dbms: 'bottle_factory', table: 'metric_58' },  // Enterprise_B/Site1/palletizing/palletizermanual02/metric
+              assets: {
+                // Enterprise_B/Site1/palletizing/palletizermanual02/workstation
+                workstation: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_61' },  // Enterprise_B/Site1/palletizing/palletizermanual02/workstation/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_10' },  // Enterprise_B/Site1/palletizing/palletizermanual02/workstation/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site1/palletizing/palletizermanual03
+            palletizermanual03: {
+              metric: { dbms: 'bottle_factory', table: 'metric_56' },  // Enterprise_B/Site1/palletizing/palletizermanual03/metric
+              assets: {
+                // Enterprise_B/Site1/palletizing/palletizermanual03/workstation
+                workstation: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_21' },  // Enterprise_B/Site1/palletizing/palletizermanual03/workstation/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_7' },  // Enterprise_B/Site1/palletizing/palletizermanual03/workstation/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site1/palletizing/palletizermanual04
+            palletizermanual04: {
+              metric: { dbms: 'bottle_factory', table: 'metric_51' },  // Enterprise_B/Site1/palletizing/palletizermanual04/metric
+              assets: {
+                // Enterprise_B/Site1/palletizing/palletizermanual04/workstation
+                workstation: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_29' },  // Enterprise_B/Site1/palletizing/palletizermanual04/workstation/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_13' },  // Enterprise_B/Site1/palletizing/palletizermanual04/workstation/processdata
+                },
+              },
+            },
+          },
+        },
+      },
     },
+    // ── Site2
     Site2: {
-      // Enterprise_B/Site2/metric
-      metric: { dbms: 'bottle_factory', table: 'metric_69' },
+      metric: { dbms: 'bottle_factory', table: 'metric_77' },  // Enterprise_B/Site2/metric
       processes: {
-        fillerproduction: { dbms: 'bottle_factory', table: 'metric_70' },  // was metric_76 (empty)
-        liquidprocessing: { dbms: 'bottle_factory', table: 'metric_82' },
-        packaging:        { dbms: 'bottle_factory', table: 'metric_80' },
-        palletizing:      { dbms: 'bottle_factory', table: 'metric_83' },
-      }
+        // ── Site2/fillerproduction
+        fillerproduction: {
+          metric: { dbms: 'bottle_factory', table: 'metric_76' },  // Enterprise_B/Site2/fillerproduction/metric
+          assets: {
+            // Enterprise_B/Site2/fillerproduction/fillingline01
+            fillingline01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_90' },  // Enterprise_B/Site2/fillerproduction/fillingline01/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_13' },  // Enterprise_B/Site2/fillerproduction/fillingline01/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_19' },  // Enterprise_B/Site2/fillerproduction/fillingline01/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_19' },  // Enterprise_B/Site2/fillerproduction/fillingline01/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site2/fillerproduction/fillingline01/caploader
+                caploader: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_95' },  // Enterprise_B/Site2/fillerproduction/fillingline01/caploader/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_57' },  // Enterprise_B/Site2/fillerproduction/fillingline01/caploader/processdata
+                },
+                // Enterprise_B/Site2/fillerproduction/fillingline01/filler
+                filler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_65' },  // Enterprise_B/Site2/fillerproduction/fillingline01/filler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_46' },  // Enterprise_B/Site2/fillerproduction/fillingline01/filler/processdata
+                },
+                // Enterprise_B/Site2/fillerproduction/fillingline01/washer
+                washer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_97' },  // Enterprise_B/Site2/fillerproduction/fillingline01/washer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_51' },  // Enterprise_B/Site2/fillerproduction/fillingline01/washer/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site2/fillerproduction/fillingline02
+            fillingline02: {
+              metric: { dbms: 'bottle_factory', table: 'metric_66' },  // Enterprise_B/Site2/fillerproduction/fillingline02/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_15' },  // Enterprise_B/Site2/fillerproduction/fillingline02/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_22' },  // Enterprise_B/Site2/fillerproduction/fillingline02/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_22' },  // Enterprise_B/Site2/fillerproduction/fillingline02/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site2/fillerproduction/fillingline02/caploader
+                caploader: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_85' },  // Enterprise_B/Site2/fillerproduction/fillingline02/caploader/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_63' },  // Enterprise_B/Site2/fillerproduction/fillingline02/caploader/processdata
+                },
+                // Enterprise_B/Site2/fillerproduction/fillingline02/filler
+                filler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_94' },  // Enterprise_B/Site2/fillerproduction/fillingline02/filler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_59' },  // Enterprise_B/Site2/fillerproduction/fillingline02/filler/processdata
+                },
+                // Enterprise_B/Site2/fillerproduction/fillingline02/washer
+                washer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_100' },  // Enterprise_B/Site2/fillerproduction/fillingline02/washer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_50' },  // Enterprise_B/Site2/fillerproduction/fillingline02/washer/processdata
+                },
+              },
+            },
+          },
+        },
+        // ── Site2/liquidprocessing
+        liquidprocessing: {
+          metric: { dbms: 'bottle_factory', table: 'metric_82' },  // Enterprise_B/Site2/liquidprocessing/metric
+          assets: {
+            // Enterprise_B/Site2/liquidprocessing/mixroom01
+            mixroom01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_91' },  // Enterprise_B/Site2/liquidprocessing/mixroom01/metric
+              assets: {
+                // Enterprise_B/Site2/liquidprocessing/mixroom01/vat01
+                vat01: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_69' },  // Enterprise_B/Site2/liquidprocessing/mixroom01/vat01/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_64' },  // Enterprise_B/Site2/liquidprocessing/mixroom01/vat01/processdata
+                  workorder: { dbms: 'bottle_factory', table: 'workorder_16' },  // Enterprise_B/Site2/liquidprocessing/mixroom01/vat01/workorder
+                  workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_24' },  // Enterprise_B/Site2/liquidprocessing/mixroom01/vat01/workorder/lotnumber
+                  workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_23' },  // Enterprise_B/Site2/liquidprocessing/mixroom01/vat01/workorder/lotnumber/item
+                },
+                // Enterprise_B/Site2/liquidprocessing/mixroom01/vat02
+                vat02: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_99' },  // Enterprise_B/Site2/liquidprocessing/mixroom01/vat02/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_49' },  // Enterprise_B/Site2/liquidprocessing/mixroom01/vat02/processdata
+                  workorder: { dbms: 'bottle_factory', table: 'workorder_17' },  // Enterprise_B/Site2/liquidprocessing/mixroom01/vat02/workorder
+                  workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_26' },  // Enterprise_B/Site2/liquidprocessing/mixroom01/vat02/workorder/lotnumber
+                  workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_25' },  // Enterprise_B/Site2/liquidprocessing/mixroom01/vat02/workorder/lotnumber/item
+                },
+              },
+            },
+            // Enterprise_B/Site2/liquidprocessing/tankstorage01
+            tankstorage01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_79' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/metric
+              assets: {
+                // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank01
+                tank01: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_67' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank01/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_45' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank01/processdata
+                  lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_25' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank01/lotnumber
+                  lotnumber_item: { dbms: 'bottle_factory', table: 'item_24' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank01/lotnumber/item
+                },
+                // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank02
+                tank02: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_86' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank02/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_55' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank02/processdata
+                  lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_20' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank02/lotnumber
+                  lotnumber_item: { dbms: 'bottle_factory', table: 'item_20' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank02/lotnumber/item
+                },
+                // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank03
+                tank03: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_78' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank03/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_61' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank03/processdata
+                  lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_23' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank03/lotnumber
+                  lotnumber_item: { dbms: 'bottle_factory', table: 'item_21' },  // Enterprise_B/Site2/liquidprocessing/tankstorage01/tank03/lotnumber/item
+                },
+              },
+            },
+          },
+        },
+        // ── Site2/packaging
+        packaging: {
+          metric: { dbms: 'bottle_factory', table: 'metric_80' },  // Enterprise_B/Site2/packaging/metric
+          assets: {
+            // Enterprise_B/Site2/packaging/labelerline01
+            labelerline01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_96' },  // Enterprise_B/Site2/packaging/labelerline01/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_14' },  // Enterprise_B/Site2/packaging/labelerline01/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_21' },  // Enterprise_B/Site2/packaging/labelerline01/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_26' },  // Enterprise_B/Site2/packaging/labelerline01/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site2/packaging/labelerline01/labeler
+                labeler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_92' },  // Enterprise_B/Site2/packaging/labelerline01/labeler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_52' },  // Enterprise_B/Site2/packaging/labelerline01/labeler/processdata
+                },
+                // Enterprise_B/Site2/packaging/labelerline01/packager
+                packager: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_70' },  // Enterprise_B/Site2/packaging/labelerline01/packager/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_58' },  // Enterprise_B/Site2/packaging/labelerline01/packager/processdata
+                },
+                // Enterprise_B/Site2/packaging/labelerline01/sealer
+                sealer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_68' },  // Enterprise_B/Site2/packaging/labelerline01/sealer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_48' },  // Enterprise_B/Site2/packaging/labelerline01/sealer/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site2/packaging/labelerline02
+            labelerline02: {
+              metric: { dbms: 'bottle_factory', table: 'metric_88' },  // Enterprise_B/Site2/packaging/labelerline02/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_12' },  // Enterprise_B/Site2/packaging/labelerline02/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_18' },  // Enterprise_B/Site2/packaging/labelerline02/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_18' },  // Enterprise_B/Site2/packaging/labelerline02/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site2/packaging/labelerline02/labeler
+                labeler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_71' },  // Enterprise_B/Site2/packaging/labelerline02/labeler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_53' },  // Enterprise_B/Site2/packaging/labelerline02/labeler/processdata
+                },
+                // Enterprise_B/Site2/packaging/labelerline02/packager
+                packager: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_73' },  // Enterprise_B/Site2/packaging/labelerline02/packager/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_62' },  // Enterprise_B/Site2/packaging/labelerline02/packager/processdata
+                },
+                // Enterprise_B/Site2/packaging/labelerline02/sealer
+                sealer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_87' },  // Enterprise_B/Site2/packaging/labelerline02/sealer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_60' },  // Enterprise_B/Site2/packaging/labelerline02/sealer/processdata
+                },
+              },
+            },
+          },
+        },
+        // ── Site2/palletizing
+        palletizing: {
+          metric: { dbms: 'bottle_factory', table: 'metric_83' },  // Enterprise_B/Site2/palletizing/metric
+          assets: {
+            // Enterprise_B/Site2/palletizing/palletizer01
+            palletizer01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_98' },  // Enterprise_B/Site2/palletizing/palletizer01/metric
+              assets: {
+                // Enterprise_B/Site2/palletizing/palletizer01/pallet01
+                pallet01: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_72' },  // Enterprise_B/Site2/palletizing/palletizer01/pallet01/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_56' },  // Enterprise_B/Site2/palletizing/palletizer01/pallet01/processdata
+                },
+                // Enterprise_B/Site2/palletizing/palletizer01/pallet02
+                pallet02: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_93' },  // Enterprise_B/Site2/palletizing/palletizer01/pallet02/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_66' },  // Enterprise_B/Site2/palletizing/palletizer01/pallet02/processdata
+                },
+                // Enterprise_B/Site2/palletizing/palletizer01/robot
+                robot: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_81' },  // Enterprise_B/Site2/palletizing/palletizer01/robot/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_65' },  // Enterprise_B/Site2/palletizing/palletizer01/robot/processdata
+                },
+                // Enterprise_B/Site2/palletizing/palletizer01/wrapper
+                wrapper: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_89' },  // Enterprise_B/Site2/palletizing/palletizer01/wrapper/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_44' },  // Enterprise_B/Site2/palletizing/palletizer01/wrapper/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site2/palletizing/palletizermanual01
+            palletizermanual01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_75' },  // Enterprise_B/Site2/palletizing/palletizermanual01/metric
+              assets: {
+                // Enterprise_B/Site2/palletizing/palletizermanual01/workstation
+                workstation: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_84' },  // Enterprise_B/Site2/palletizing/palletizermanual01/workstation/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_54' },  // Enterprise_B/Site2/palletizing/palletizermanual01/workstation/processdata
+                },
+              },
+            },
+            // Enterprise_B/Site2/palletizing/palletizermanual02
+            palletizermanual02: {
+              metric: { dbms: 'bottle_factory', table: 'metric_101' },  // Enterprise_B/Site2/palletizing/palletizermanual02/metric
+              assets: {
+                // Enterprise_B/Site2/palletizing/palletizermanual02/workstation
+                workstation: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_74' },  // Enterprise_B/Site2/palletizing/palletizermanual02/workstation/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_47' },  // Enterprise_B/Site2/palletizing/palletizermanual02/workstation/processdata
+                },
+              },
+            },
+          },
+        },
+      },
     },
+    // ── Site3
     Site3: {
-      // Enterprise_B/Site3/metric
-      metric: { dbms: 'bottle_factory', table: 'metric_116' },
+      metric: { dbms: 'bottle_factory', table: 'metric_104' },  // Enterprise_B/Site3/metric
       processes: {
-        fillerproduction: { dbms: 'bottle_factory', table: 'metric_107' },  // was metric_115 (empty)
-        liquidprocessing: { dbms: 'bottle_factory', table: 'metric_121' },
-        packaging:        { dbms: 'bottle_factory', table: 'metric_109' },  // was metric_106 (empty)
-        palletizing:      { dbms: 'bottle_factory', table: 'metric_102' },
-      }
-    }
+        // ── Site3/fillerproduction
+        fillerproduction: {
+          metric: { dbms: 'bottle_factory', table: 'metric_115' },  // Enterprise_B/Site3/fillerproduction/metric
+          assets: {
+            // Enterprise_B/Site3/fillerproduction/fillingline01
+            fillingline01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_117' },  // Enterprise_B/Site3/fillerproduction/fillingline01/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_20' },  // Enterprise_B/Site3/fillerproduction/fillingline01/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_30' },  // Enterprise_B/Site3/fillerproduction/fillingline01/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_30' },  // Enterprise_B/Site3/fillerproduction/fillingline01/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site3/fillerproduction/fillingline01/caploader
+                caploader: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_114' },  // Enterprise_B/Site3/fillerproduction/fillingline01/caploader/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_70' },  // Enterprise_B/Site3/fillerproduction/fillingline01/caploader/processdata
+                },
+                // Enterprise_B/Site3/fillerproduction/fillingline01/filler
+                filler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_103' },  // Enterprise_B/Site3/fillerproduction/fillingline01/filler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_76' },  // Enterprise_B/Site3/fillerproduction/fillingline01/filler/processdata
+                },
+                // Enterprise_B/Site3/fillerproduction/fillingline01/washer
+                washer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_119' },  // Enterprise_B/Site3/fillerproduction/fillingline01/washer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_71' },  // Enterprise_B/Site3/fillerproduction/fillingline01/washer/processdata
+                },
+              },
+            },
+          },
+        },
+        // ── Site3/liquidprocessing
+        liquidprocessing: {
+          metric: { dbms: 'bottle_factory', table: 'metric_121' },  // Enterprise_B/Site3/liquidprocessing/metric
+          assets: {
+            // Enterprise_B/Site3/liquidprocessing/mixroom01
+            mixroom01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_110' },  // Enterprise_B/Site3/liquidprocessing/mixroom01/metric
+              assets: {
+                // Enterprise_B/Site3/liquidprocessing/mixroom01/vat01
+                vat01: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_112' },  // Enterprise_B/Site3/liquidprocessing/mixroom01/vat01/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_67' },  // Enterprise_B/Site3/liquidprocessing/mixroom01/vat01/processdata
+                  workorder: { dbms: 'bottle_factory', table: 'workorder_19' },  // Enterprise_B/Site3/liquidprocessing/mixroom01/vat01/workorder
+                  workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_28' },  // Enterprise_B/Site3/liquidprocessing/mixroom01/vat01/workorder/lotnumber
+                  workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_28' },  // Enterprise_B/Site3/liquidprocessing/mixroom01/vat01/workorder/lotnumber/item
+                },
+              },
+            },
+            // Enterprise_B/Site3/liquidprocessing/tankstorage01
+            tankstorage01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_105' },  // Enterprise_B/Site3/liquidprocessing/tankstorage01/metric
+              assets: {
+                // Enterprise_B/Site3/liquidprocessing/tankstorage01/tank01
+                tank01: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_109' },  // Enterprise_B/Site3/liquidprocessing/tankstorage01/tank01/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_69' },  // Enterprise_B/Site3/liquidprocessing/tankstorage01/tank01/processdata
+                  lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_31' },  // Enterprise_B/Site3/liquidprocessing/tankstorage01/tank01/lotnumber
+                  lotnumber_item: { dbms: 'bottle_factory', table: 'item_31' },  // Enterprise_B/Site3/liquidprocessing/tankstorage01/tank01/lotnumber/item
+                },
+                // Enterprise_B/Site3/liquidprocessing/tankstorage01/tank02
+                tank02: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_107' },  // Enterprise_B/Site3/liquidprocessing/tankstorage01/tank02/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_72' },  // Enterprise_B/Site3/liquidprocessing/tankstorage01/tank02/processdata
+                  lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_29' },  // Enterprise_B/Site3/liquidprocessing/tankstorage01/tank02/lotnumber
+                  lotnumber_item: { dbms: 'bottle_factory', table: 'item_29' },  // Enterprise_B/Site3/liquidprocessing/tankstorage01/tank02/lotnumber/item
+                },
+              },
+            },
+          },
+        },
+        // ── Site3/packaging
+        packaging: {
+          metric: { dbms: 'bottle_factory', table: 'metric_106' },  // Enterprise_B/Site3/packaging/metric
+          assets: {
+            // Enterprise_B/Site3/packaging/labelerline01
+            labelerline01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_108' },  // Enterprise_B/Site3/packaging/labelerline01/metric
+              workorder: { dbms: 'bottle_factory', table: 'workorder_18' },  // Enterprise_B/Site3/packaging/labelerline01/workorder
+              workorder_lotnumber: { dbms: 'bottle_factory', table: 'lotnumber_27' },  // Enterprise_B/Site3/packaging/labelerline01/workorder/lotnumber
+              workorder_lotnumber_item: { dbms: 'bottle_factory', table: 'item_27' },  // Enterprise_B/Site3/packaging/labelerline01/workorder/lotnumber/item
+              assets: {
+                // Enterprise_B/Site3/packaging/labelerline01/labeler
+                labeler: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_120' },  // Enterprise_B/Site3/packaging/labelerline01/labeler/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_75' },  // Enterprise_B/Site3/packaging/labelerline01/labeler/processdata
+                },
+                // Enterprise_B/Site3/packaging/labelerline01/packager
+                packager: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_111' },  // Enterprise_B/Site3/packaging/labelerline01/packager/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_73' },  // Enterprise_B/Site3/packaging/labelerline01/packager/processdata
+                },
+                // Enterprise_B/Site3/packaging/labelerline01/sealer
+                sealer: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_118' },  // Enterprise_B/Site3/packaging/labelerline01/sealer/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_68' },  // Enterprise_B/Site3/packaging/labelerline01/sealer/processdata
+                },
+              },
+            },
+          },
+        },
+        // ── Site3/palletizing
+        palletizing: {
+          metric: { dbms: 'bottle_factory', table: 'metric_102' },  // Enterprise_B/Site3/palletizing/metric
+          assets: {
+            // Enterprise_B/Site3/palletizing/palletizermanual01
+            palletizermanual01: {
+              metric: { dbms: 'bottle_factory', table: 'metric_116' },  // Enterprise_B/Site3/palletizing/palletizermanual01/metric
+              assets: {
+                // Enterprise_B/Site3/palletizing/palletizermanual01/workstation
+                workstation: {
+                  metric: { dbms: 'bottle_factory', table: 'metric_113' },  // Enterprise_B/Site3/palletizing/palletizermanual01/workstation/metric
+                  processdata: { dbms: 'bottle_factory', table: 'processdata_74' },  // Enterprise_B/Site3/palletizing/palletizermanual01/workstation/processdata
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   }
-};
+};  // end UNS
 
 
 // ═══════════════════════════════════════════════════════════
@@ -977,6 +1677,17 @@ let logLines = [];
 // Cached rollups to avoid extra queries outside scan cadence
 let LAST = { entOee: null, siteOee: {} };
 
+// ── Query pacing ─────────────────────────────────────────────
+// Small gap between sequential queries to avoid overwhelming
+// memory-constrained AnyLog operator nodes.
+const QUERY_GAP_MS = 250;            // ms pause between back-to-back queries
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// Workorder queries are expensive (lotnumber + item per pair).
+// Only run them every WO_CADENCE refresh cycles to reduce load.
+const WO_CADENCE = 4;                // run workorder fetch every 4th cycle
+let   woCycleCount = 0;              // incremented each refreshCycle call
+
 // ═══════════════════════════════════════════════════════════
 // Formatting helpers
 // ═══════════════════════════════════════════════════════════
@@ -1337,6 +2048,7 @@ function buildDOM() {
           <div class="ape-cell"><span class="ape-v sk" id="s-p-${s}">—</span><span class="ape-l">Perf</span></div>
           <div class="ape-cell"><span class="ape-v sk" id="s-q-${s}">—</span><span class="ape-l">Qual</span></div>
         </div>
+        <div class="pc-delta" id="dl-s-${s}">Δ Ent: —</div>
       </div>
     </div>`).join('');
 
@@ -1356,6 +2068,7 @@ function buildDOM() {
             <div class="pcm"><span class="pcm-v sk" id="pp-${id}">—</span><span class="pcm-l">Perf</span></div>
             <div class="pcm"><span class="pcm-v sk" id="pq-${id}">—</span><span class="pcm-l">Qual</span></div>
           </div>
+          <div class="pc-delta" id="dl-${id}">Δ Site: — · Δ Ent: —</div>
         </div>`;
     }).join('');
     return `
@@ -1509,7 +2222,9 @@ async function fetchWorkordersForScope(scopePrefix, maxPairs=10) {
 
   for (const p of pairs) {
     const lotRows  = p.lot  ? await queryLatestRow(p.lot.dbms,  p.lot.table,  1) : [];
+    if (p.lot) await sleep(QUERY_GAP_MS);
     const itemRows = p.item ? await queryLatestRow(p.item.dbms, p.item.table, 1) : [];
+    if (p.item) await sleep(QUERY_GAP_MS);
 
     const lotVal  = lotRows?.[0]  ? extractWorkorderValue(lotRows[0],  ['lotnumber','lot_number','lot','workorder','work_order','wo','id']) : null;
     const itemVal = itemRows?.[0] ? extractWorkorderValue(itemRows[0], ['item','sku','product','material','part','partnumber','part_number']) : null;
@@ -1594,13 +2309,14 @@ function renderLeafTables(nsBase) {
   });
 }
 
-async function refreshEnterpriseAndSites(lb) {
+async function refreshEnterpriseAndSites(lb, woNow=true) {
   addLog('info', `── Rollup refresh (enterprise+sites)  lookback=${lb} ──`);
 
-  let entData = await queryProxy(UNS.enterprise.dbms, UNS.enterprise.table, lb);
+  let entData = await queryProxy(UNS.enterprise.metric.dbms, UNS.enterprise.metric.table, lb);
 
   const siteResults = {};
   for (const s of SITES) {
+    await sleep(QUERY_GAP_MS);
     const d = await queryProxy(UNS.sites[s].metric.dbms, UNS.sites[s].metric.table, lb);
     siteResults[s] = d;
     if (d && d.oee!=null) LAST.siteOee[s] = (+d.oee||0);
@@ -1629,9 +2345,11 @@ async function refreshEnterpriseAndSites(lb) {
     setTxt('e-qual',  entData.quality);
   }
 
-  // Enterprise-level workorders (sample top)
-  const wo = await fetchWorkordersForScope('Enterprise_B', 10);
-  setWorkorderText('e-workorder', wo);
+  // Enterprise-level workorders (sample top) — only on WO cadence cycles
+  if (woNow) {
+    const wo = await fetchWorkordersForScope('Enterprise_B', 3);
+    setWorkorderText('e-workorder', wo);
+  }
 
   // Enterprise impact from sites (equal-weight)
   const impactHost = document.getElementById('e-impact');
@@ -1650,9 +2368,22 @@ async function refreshEnterpriseAndSites(lb) {
         <div class="mini-grid"><div class="mini-row mini-head"><span>Child</span><span>OEE</span><span>Contrib</span><span>Δ vs parent</span></div>${rows}</div>`;
     }
   }
+
+  // Site-card deltas: Δ vs Enterprise (equal-weight across sites)
+  if (entData?.oee != null) {
+    const entOee  = +entData.oee || 0;
+    const nSites  = SITES.length || 1;
+    for (const s of SITES) {
+      const d = siteResults[s];
+      if (!d || d.oee == null) continue;
+      const diff     = (+d.oee||0) - entOee;
+      const dEntPP   = diff / nSites * 100;
+      setDelta(`dl-s-${s}`, `Δ Ent: ${fmtPP(dEntPP)}`);
+    }
+  }
 }
 
-async function refreshSiteView(lb) {
+async function refreshSiteView(lb, woNow=true) {
   const site = VIEW.site;
   if (!site) return;
 
@@ -1671,15 +2402,18 @@ async function refreshSiteView(lb) {
       </div>`;
   }
 
-  // Workorder for site scope
-  const wo = await fetchWorkordersForScope(`Enterprise_B/${site}`, 10);
-  setWorkorderText('drill-workorder', wo);
+  // Workorder for site scope — only on WO cadence cycles
+  if (woNow) {
+    const wo = await fetchWorkordersForScope(`Enterprise_B/${site}`, 5);
+    setWorkorderText('drill-workorder', wo);
+  }
 
   // Process cards for the site (queried only when site view visible)
   const procs = Object.keys(UNS.sites[site].processes);
   const results = [];
   for (const p of procs) {
-    const { dbms, table } = UNS.sites[site].processes[p];
+    await sleep(QUERY_GAP_MS);
+    const { dbms, table } = UNS.sites[site].processes[p].metric;
     const d = await queryProxy(dbms, table, lb);
     results.push(d);
     const id = `${site}-${p}-dr`;
@@ -1729,15 +2463,18 @@ async function refreshSiteView(lb) {
   }
 }
 
-async function refreshProcessView(lb) {
+async function refreshProcessView(lb, woNow=true) {
   const site = VIEW.site, proc = VIEW.process;
   if (!site || !proc) return;
 
-  // Workorders for process scope
-  const wo = await fetchWorkordersForScope(`Enterprise_B/${site}/${proc}`, 10);
+  // Workorders for process scope — only on WO cadence cycles
+  if (woNow) {
+    const wo = await fetchWorkordersForScope(`Enterprise_B/${site}/${proc}`, 5);
+    setWorkorderText('drill-workorder', wo);
+  }
 
   // Get process rollup for parent ref (queried only when visible)
-  const parent = await queryProxy(UNS.sites[site].processes[proc].dbms, UNS.sites[site].processes[proc].table, lb);
+  const parent = await queryProxy(UNS.sites[site].processes[proc].metric.dbms, UNS.sites[site].processes[proc].metric.table, lb);
   const hero = document.getElementById('drill-hero');
   if (hero && parent) {
     hero.innerHTML = `
@@ -1750,7 +2487,6 @@ async function refreshProcessView(lb) {
         </div>
       </div>`;
   }
-  setWorkorderText('drill-workorder', wo);
 
   // Build asset list using deriveAssets (case-insensitive, UNS-aware, no undefined helpers)
   const subprocesses = deriveAssets(site, proc);
@@ -1787,6 +2523,7 @@ async function refreshProcessView(lb) {
     const id = `${site}-${proc}-${sp.name}-sp`;
     const metricRow = sp.metricRow || (sp.leafNodes && sp.leafNodes[0]) || null;
     if (!metricRow) { results.push(null); continue; }
+    await sleep(QUERY_GAP_MS);
     const d = await queryProxy(metricRow.dbms, metricRow.table, lb);
     results.push(d);
     if (d) {
@@ -1815,27 +2552,56 @@ async function refreshProcessView(lb) {
       <div class="mini-hdr">Impact to ${PROC_LABEL[proc]} OEE (equal-weight)</div>
       <div class="mini-grid"><div class="mini-row mini-head"><span>Asset</span><span>OEE</span><span>Contrib</span><span>Δ vs parent</span></div>${rows}</div>`;
   }
+
+  // Per-card deltas: how each asset OEE impacts Process → Site → Enterprise (equal-weight chain)
+  const procRef  = parent?.oee != null ? (+parent.oee||0) : null;
+  const siteRef2 = LAST.siteOee[site] != null ? LAST.siteOee[site] : null;
+  const entRef   = LAST.entOee != null ? LAST.entOee : null;
+  const nAsset   = subprocesses.length || 1;
+  const nProc2   = Object.keys(UNS.sites[site].processes).length || 1;
+  const nSites   = SITES.length || 1;
+
+  for (let i = 0; i < subprocesses.length; i++) {
+    const sp = subprocesses[i];
+    const d  = results[i];
+    if (!d || d.oee == null) continue;
+    const id = `${site}-${proc}-${sp.name}-sp`;
+    const v  = +d.oee || 0;
+    const dProcPP = procRef  != null ? (v - procRef)  / nAsset           * 100 : null;
+    const dSitePP = siteRef2 != null ? (v - siteRef2) / (nAsset * nProc2)           * 100 : null;
+    const dEntPP  = entRef   != null ? (v - entRef)   / (nAsset * nProc2 * nSites)  * 100 : null;
+    const parts = [];
+    if (dProcPP != null) parts.push(`Δ Proc: ${fmtPP(dProcPP)}`);
+    if (dSitePP != null) parts.push(`Δ Site: ${fmtPP(dSitePP)}`);
+    if (dEntPP  != null) parts.push(`Δ Ent: ${fmtPP(dEntPP)}`);
+    if (parts.length) setDelta(`dl-${id}`, parts.join(' · '));
+  }
 }
 
-async function refreshAssetView(lb) {
+async function refreshAssetView(lb, woNow=true) {
   // Show leaves under the asset and allow clicking to leaf details
   const site = VIEW.site, proc = VIEW.process, sp = VIEW.asset;
   if (!site || !proc || !sp) return;
 
   const scope = `Enterprise_B/${site}/${proc}/${sp}`;
-  const wo = await fetchWorkordersForScope(scope, 10);
+
   const hero = document.getElementById('drill-hero');
-  if (hero) {
+  if (hero && !hero.children.length) {
     hero.innerHTML = `
       <div class="hero">
         <div class="hero-main">
           <div class="hero-title">${site} — ${PROC_LABEL[proc]} — ${sp}</div>
           <div class="hero-sub" id="drill-workorder">Workorder: —</div>
-          <div class="hero-sub">Click a leaf to see all metrics & process data.</div>
+          <div class="hero-sub">Click a leaf to see all metrics &amp; process data.</div>
         </div>
       </div>`;
   }
-  setWorkorderText('drill-workorder', wo);
+
+  // Workorders — only on WO cadence cycles
+  if (woNow) {
+    const wo = await fetchWorkordersForScope(scope, 5);
+    setWorkorderText('drill-workorder', wo);
+  }
 
   const grid = document.getElementById('drill-grid');
   if (!grid) return;
@@ -1881,14 +2647,17 @@ async function refreshAssetView(lb) {
     });
   }
 
-  // paint values
+  // paint values — paced with inter-query gaps
+  const leafResults = [];   // {id, v} for delta calc after loop
   for (const el of grid.querySelectorAll('.pc[data-leafns]')) {
     const ns = el.getAttribute('data-leafns');
     const idNode = el.querySelector('div[id^="ns-"]')?.id;
     const id = idNode ? idNode.replace('ns-','') : null;
     const metric = UNS_METRIC.find(r => nsNorm(r.namespace) === nsNorm(ns + '/metric'));
     if (!metric || !id) continue;
+    await sleep(QUERY_GAP_MS);
     const d = await queryProxy(metric.dbms, metric.table, lb);
+    leafResults.push({ id, oee: d?.oee ?? null });
     if (d) {
       const oe = document.getElementById(`po-${id}`);
       if (oe) { unsk(oe); oe.className = oe.className.replace(/\bc-\w+/g,'') + ' ' + oeeClass(d.oee); oe.textContent = pct(d.oee); }
@@ -1899,17 +2668,48 @@ async function refreshAssetView(lb) {
       setTxt(`pq-${id}`, d.quality);
     }
   }
+
+  // Per-card deltas: leaf → Asset (avg of leaves) → Process → Site → Enterprise
+  const validLeaves = leafResults.filter(x => x.oee != null);
+  if (validLeaves.length) {
+    const assetRef = validLeaves.reduce((s, x) => s + (+x.oee||0), 0) / validLeaves.length;
+    const procNode  = UNS.sites[site]?.processes[proc];
+    const procRef   = procNode ? null : null;   // process OEE not queried here; use LAST if available
+    const siteRef   = LAST.siteOee[site]  != null ? LAST.siteOee[site]  : null;
+    const entRef    = LAST.entOee          != null ? LAST.entOee          : null;
+    const nLeaves   = validLeaves.length || 1;
+    const nProcs    = Object.keys(UNS.sites[site].processes).length || 1;
+    const nSites    = SITES.length || 1;
+
+    for (const { id, oee } of leafResults) {
+      if (oee == null) continue;
+      const v = +oee || 0;
+      const dSubPP  = (v - assetRef) / nLeaves * 100;
+      const dSitePP = siteRef != null ? (v - siteRef) / (nLeaves * nProcs)          * 100 : null;
+      const dEntPP  = entRef  != null ? (v - entRef)  / (nLeaves * nProcs * nSites) * 100 : null;
+      const parts   = [`Δ Sub: ${fmtPP(dSubPP)}`];
+      if (dSitePP != null) parts.push(`Δ Site: ${fmtPP(dSitePP)}`);
+      if (dEntPP  != null) parts.push(`Δ Ent: ${fmtPP(dEntPP)}`);
+      setDelta(`dl-${id}`, parts.join(' · '));
+    }
+  }
 }
 
-async function refreshLeafView(lb) {
+async function refreshLeafView(lb, woNow=true) {
   const ns = VIEW.leafNs;
   if (!ns) return;
 
-  // show workorder for this leaf scope
-  const wo = await fetchWorkordersForScope(ns, 6);
-
-  // show leaf tables list + lazy load buttons
-  renderLeafTables(ns);
+  // show workorder for this leaf scope — only on WO cadence cycles
+  if (woNow) {
+    const wo = await fetchWorkordersForScope(ns, 3);
+    // show leaf tables list + lazy load buttons
+    renderLeafTables(ns);
+    // Render into hero after the metric query below sets drill-workorder
+    // (stored for use after hero is built)
+    refreshLeafView._lastWo = wo;
+  } else {
+    renderLeafTables(ns);
+  }
 
   // also show leaf's own OEE in hero
   const metric = UNS_METRIC.find(r => nsNorm(r.namespace) === nsNorm(ns + '/metric'));
@@ -1926,8 +2726,9 @@ async function refreshLeafView(lb) {
             <div class="hero-sub" id="drill-workorder">Workorder: —</div>
           </div>
         </div>`;
+      // Apply last fetched workorder label if available
+      if (refreshLeafView._lastWo) setWorkorderText('drill-workorder', refreshLeafView._lastWo);
     }
-  setWorkorderText('drill-workorder', wo);
   }
 }
 
@@ -1935,14 +2736,19 @@ async function refreshCycle(immediate=false) {
   if (paused) return;
   const lb = document.getElementById('lookback').value;
 
+  // Track workorder cadence — skip expensive WO queries most cycles
+  woCycleCount++;
+  const woNow = immediate || (woCycleCount % WO_CADENCE === 0);
+
   // Always refresh enterprise + sites at scan rate
-  await refreshEnterpriseAndSites(lb);
+  await refreshEnterpriseAndSites(lb, woNow);
+  await sleep(QUERY_GAP_MS);
 
   // Refresh only what's visible by view
-  if (VIEW.level === 'site')      await refreshSiteView(lb);
-  if (VIEW.level === 'process')   await refreshProcessView(lb);
-  if (VIEW.level === 'asset')     await refreshAssetView(lb);
-  if (VIEW.level === 'leaf')      await refreshLeafView(lb);
+  if (VIEW.level === 'site')      { await refreshSiteView(lb, woNow);    await sleep(QUERY_GAP_MS); }
+  if (VIEW.level === 'process')   { await refreshProcessView(lb, woNow); await sleep(QUERY_GAP_MS); }
+  if (VIEW.level === 'asset')     { await refreshAssetView(lb, woNow);   await sleep(QUERY_GAP_MS); }
+  if (VIEW.level === 'leaf')      { await refreshLeafView(lb, woNow);    await sleep(QUERY_GAP_MS); }
 
   if (immediate) addLog('info', 'Immediate refresh complete (view change)');
 }
