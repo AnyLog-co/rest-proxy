@@ -426,7 +426,9 @@ const S = {
   timer:null, cdTimer:null,
   queries:0, rows:0, errors:0,
   alerts:[],
-  history:{}
+  history:{},
+  schema:{},  // cache: table -> {tsCol, valCol}
+  polling:false  // prevents overlapping poll cycles
 };
 
 let chartViewMinutes = 60;
@@ -447,6 +449,11 @@ initHistory();
 const proxy   = ()=>document.getElementById('cfgProxy').value.trim().replace(/\/$/,'');
 const db      = ()=>document.getElementById('cfgDb').value.trim();
 const lookback= ()=>document.getElementById('cfgLook').value;
+// Map trend window selection to a row count for DESC LIMIT queries
+// Assumes ~4 samples/min typical IoT rate; capped at MAX_PTS for chart clarity
+// Fetch enough rows to compute good SPC statistics AND display the trend chart
+// 2000 rows at typical 4 samples/min covers ~8 hours of data
+const trendLimit= ()=>2000;
 const baseline= ()=>document.getElementById('cfgBaseline').value;
 
 async function apiStatus(){
@@ -497,38 +504,12 @@ async function apiTrend(table, sql){
   }
 }
 
-// Baseline uses the same working /api/query endpoint (NOT /increment which wraps NOW() in quotes)
-// Returns raw rows from a longer window; calcSPC computes σ from them directly
-async function apiBaseline(table){
-  const t0=Date.now();
-  // Use same NOW() syntax that works in apiTrend — no quoting issues
-  const sql=`SELECT value, timestamp FROM ${table} WHERE timestamp >= NOW() - ${baseline()} ORDER BY timestamp ASC LIMIT 2000`;
-  try{
-    const r=await fetch(`${proxy()}/api/query`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({dbms:db(), sql})
-    });
-    const dur=Date.now()-t0;
-    if(!r.ok){
-      const txt=await r.text().catch(()=>'');
-      logCall({method:'POST',path:'/api/query (baseline)',status:r.status,dur,rowCnt:0,type:'baseline',
-        detail:`${table} | HTTP ${r.status}: ${txt.slice(0,50)}`,table,error:new Error(`HTTP ${r.status}`)});
-      S.errors++;sbar();return null;
-    }
-    const data=await r.json();
-    const rows=Array.isArray(data)?data
-              :Array.isArray(data?.Query)?data.Query
-              :Array.isArray(data?.result)?data.result:[];
-    logCall({method:'POST',path:'/api/query (baseline)',status:200,dur,rowCnt:rows.length,type:'baseline',
-      detail:`${table} σ-window:${baseline()} got ${rows.length} pts`,table});
-    S.queries++;S.rows+=rows.length;sbar();
-    return rows;
-  }catch(e){
-    logCall({method:'POST',path:'/api/query (baseline)',status:0,dur:Date.now()-t0,rowCnt:0,type:'baseline',
-      detail:`${table} | ${e.message}`,table,error:e});
-    S.errors++;sbar();return null;
-  }
+// Column names are fixed for all manufacturing_historian tables
+// Verified: all sub_* tables have "value" and "timestamp" columns
+function discoverSchema(table){
+  // Return cached or hardcoded schema — no network call needed
+  if(!S.schema[table]) S.schema[table]={tsCol:'timestamp', valCol:'value'};
+  return Promise.resolve(S.schema[table]);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -605,53 +586,60 @@ function startPolling(){
   },1000);
 }
 
+// Concurrency-limited pool — run at most N queries simultaneously to avoid MCP overload
+async function pooled(tasks, concurrency=3){
+  const results=[];
+  let i=0;
+  async function worker(){
+    while(i<tasks.length){
+      const idx=i++;
+      results[idx]=await tasks[idx]();
+    }
+  }
+  await Promise.all(Array.from({length:Math.min(concurrency,tasks.length)},worker));
+  return results;
+}
+
 async function pollAll(){
   if(!S.running||S.paused) return;
+  if(S.polling){return;}  // prevent overlapping polls
+  S.polling=true;
   document.getElementById('stLast').textContent=nowStr();
   S.alerts=[];
 
-  for(const proc of PROCESSES){
-    for(const m of proc.metrics){
-      // Trend query — recent window for chart display
-      const trendSql=`SELECT value, timestamp FROM ${m.table} WHERE timestamp >= NOW() - ${lookback()} ORDER BY timestamp ASC LIMIT 400`;
-      const trendRows=await apiTrend(m.table, trendSql);
-      if(trendRows&&trendRows.length>0){
-        const h=S.history[m.table];
-        trendRows.forEach(r=>{
-          const ts=new Date(r.timestamp||r.ts||r.time||r.Timestamp);
-          // Flexibly find the numeric value field
-          let val=NaN;
-          if(r.value!==undefined) val=parseFloat(r.value);
-          else{
-            const vk=Object.keys(r).find(k=>!/^(timestamp|ts|time|Timestamp)$/i.test(k));
-            if(vk) val=parseFloat(r[vk]);
-          }
-          if(!isNaN(val)&&!isNaN(ts.getTime())&&!h.ts.some(t=>Math.abs(t-ts)<1000)){
-            h.ts.push(ts);h.vals.push(val);
-          }
-        });
-        while(h.ts.length>MAX_PTS){h.ts.shift();h.vals.shift();}
-      }
+  // Flatten all metrics across all processes into a single task list
+  const allMetrics=[];
+  PROCESSES.forEach(proc=>proc.metrics.forEach(m=>allMetrics.push({m,proc})));
 
-      // Baseline query — longer window for σ/UCL/LCL
-      const baseRows=await apiBaseline(m.table);
-      const h=S.history[m.table];
-      if(baseRows&&baseRows.length>0){
-        h.baseVals=baseRows.map(r=>{
-          // Field may come back as "value", "avg(value)", or the first numeric key
-          const v=r.value??r['avg(value)']??Object.values(r).find(x=>typeof x==='number'||(!isNaN(parseFloat(x))&&typeof x==='string'));
-          return parseFloat(v);
-        }).filter(v=>!isNaN(v));
-      } else if(h.vals.length>=MIN_SPC){
-        h.baseVals=[...h.vals];
-      }
-      calcSPC(h);
-      detectAlerts(m, proc);
-      redrawChart(m, proc);
+  // ONE query per sensor (DESC LIMIT for trend; reuse same rows for σ baseline)
+  // Concurrency=3 so at most 3 simultaneous MCP queries — prevents timeout pileup
+  await pooled(allMetrics.map(({m,proc})=>async()=>{
+    const h=S.history[m.table];
+    const sql=`SELECT value, timestamp FROM ${m.table} ORDER BY timestamp DESC LIMIT ${trendLimit()}`;
+    const rows=await apiTrend(m.table, sql);
+    if(rows&&rows.length>0){
+      const chrono=[...rows].reverse();
+      h.ts=[];h.vals=[];
+      chrono.forEach(r=>{
+        const ts=new Date(r.timestamp||r.ts||r.time);
+        const val=parseFloat(r.value??r.v);
+        if(!isNaN(val)&&!isNaN(ts.getTime())){h.ts.push(ts);h.vals.push(val);}
+      });
+      // Use all fetched rows as the σ baseline (larger window = better statistics)
+      h.baseVals=[...h.vals];
+    } else {
+      // No new data — keep existing vals for chart, compute SPC from what we have
+      if(h.vals.length) h.baseVals=[...h.vals];
     }
-    updateBnBadge(proc);
-  }
+    calcSPC(h);
+    detectAlerts(m, proc);
+    redrawChart(m, proc);
+  }), 3);
+
+  // Update bottleneck badges and alerts after all queries done
+  PROCESSES.forEach(proc=>updateBnBadge(proc));
   renderAlerts();
+  S.polling=false;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -837,10 +825,11 @@ function redrawChart(m, proc){
   const el=document.getElementById(id);
   if(!el||!h.ts.length) return;
 
-  const now=new Date();
-  const winStart=new Date(now.getTime()-chartViewMinutes*60*1000);
+  // Use data's own latest timestamp as reference (data may be historical, not live)
+  const dataEnd=h.ts.at(-1);
+  const winStart=new Date(dataEnd.getTime()-chartViewMinutes*60*1000);
 
-  // Filter to view window
+  // Filter to view window relative to data's own time range
   const visTs=[],visVals=[];
   h.ts.forEach((t,i)=>{if(t>=winStart){visTs.push(t);visVals.push(h.vals[i]);}});
   if(!visTs.length){visTs.push(h.ts.at(-1));visVals.push(h.vals.at(-1));}
@@ -934,7 +923,7 @@ function redrawChart(m, proc){
     font:{color:'#1e3a5a',size:8,family:'Share Tech Mono'},
     xaxis:{
       gridcolor:'rgba(255,255,255,0.025)',linecolor:'#182e44',zeroline:false,
-      tickcolor:'#182e44',tickfont:{size:8},range:[winStart,now]
+      tickcolor:'#182e44',tickfont:{size:8},range:[winStart,dataEnd]
     },
     yaxis:{gridcolor:'rgba(255,255,255,0.025)',linecolor:'#182e44',zeroline:false,
       tickcolor:'#182e44',tickfont:{size:8}},

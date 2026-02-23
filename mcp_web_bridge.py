@@ -251,7 +251,7 @@ class MCPClient:
             "jsonrpc": "2.0", "id": rid, "method": "tools/call",
             "params": {"name": tool, "arguments": params},
         })
-        print(f"[MCP] -> {tool}  {str(params)[:120]}", file=sys.stderr)
+        print(f"[MCP] -> {tool}  {str(params)[:200]}", file=sys.stderr)
 
         if not slot["event"].wait(timeout=timeout):
             with self._pending_lock:
@@ -268,7 +268,7 @@ class MCPClient:
         ]
         text = "\n".join(t for t in texts if t).strip()
 
-        print(f"[MCP] {'ERR' if is_err else 'OK '} {tool}  {text[:80] or '(empty)'}", file=sys.stderr)
+        print(f"[MCP] {'ERR' if is_err else 'OK '} {tool}  {text[:150] or '(empty)'}", file=sys.stderr)
 
         if is_err:
             return {"error": text or "isError=true"}
