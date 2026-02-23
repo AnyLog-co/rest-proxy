@@ -1,90 +1,157 @@
-#!/bin/bash
-# MCP Web Bridge Startup Script
-# Enterprise C SPC Dashboard - Flask Bridge Server
+#!/usr/bin/env bash
+# =============================================================================
+# start_bridge.sh  —  MCP Web Bridge v4.0 launcher
+# =============================================================================
+#
+# USAGE
+# -----
+#   ./start_bridge.sh [OPTIONS]
+#
+# All options are passed directly to mcp_web_bridge.py.
+#
+# KEY OPTIONS
+# -----------
+#   --mcp-url  <url>     MCP SSE server URL  (overrides BRIDGE_MCP_URL)
+#   --mcp-proxy <path>   mcp-proxy binary    (overrides BRIDGE_MCP_PROXY)
+#   --port     <n>       HTTP port           (default 8080)
+#   --host     <addr>    bind interface      (default 0.0.0.0)
+#   --call-delay <s>     pause between MCP calls (default 1.5)
+#   --debug              enable Flask debug + verbose logging
+#
+# ENVIRONMENT OVERRIDES  (used when no CLI arg is supplied)
+# ----------------------------------------------------------
+#   BRIDGE_MCP_URL       MCP SSE server URL
+#   BRIDGE_MCP_PROXY     path to mcp-proxy binary
+#   BRIDGE_PORT          HTTP listen port
+#   BRIDGE_HOST          bind interface
+#   BRIDGE_CALL_DELAY    seconds between MCP calls
+#   BRIDGE_VENV          path to Python venv (activates it automatically)
+#
+# EXAMPLES
+# --------
+#   # Timbergrove
+#   ./start_bridge.sh --mcp-url https://172.79.89.206:32049/mcp/sse --port 8080
+#
+#   # AnyLog Prove-IT
+#   ./start_bridge.sh --mcp-url https://50.116.13.109:32049/mcp/sse --port 8081
+#
+#   # Dynics Prove-IT
+#   ./start_bridge.sh --mcp-url https://172.79.89.206:32049/mcp/sse
+#
+#   # Use env var instead of CLI
+#   BRIDGE_MCP_URL=https://172.79.89.206:32049/mcp/sse ./start_bridge.sh --port 9000
+#
+# =============================================================================
 
-set -e
+set -euo pipefail
 
-echo "═══════════════════════════════════════════════════════════"
-echo "MCP Web Bridge for Enterprise C Dashboard"
-echo "═══════════════════════════════════════════════════════════"
-echo ""
+# ---------------------------------------------------------------------------
+# Resolve script directory so relative paths work regardless of cwd
+# ---------------------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BRIDGE_SCRIPT="${SCRIPT_DIR}/mcp_web_bridge.py"
 
-# Configuration
-VENV_PATH="/Users/mdavidson58/Documents/AnyLog/Prove-IT/proxy/myenv"
-MCP_PROXY="${VENV_PATH}/bin/mcp-proxy"
-BRIDGE_SCRIPT="mcp_web_bridge.py"
-PORT=8080
+# ---------------------------------------------------------------------------
+# Defaults (can be overridden by env vars)
+# ---------------------------------------------------------------------------
+: "${BRIDGE_MCP_URL:=https://172.79.89.206:32049/mcp/sse}"
+: "${BRIDGE_MCP_PROXY:=/Users/mdavidson58/Documents/AnyLog/Prove-IT/venv/bin/mcp-proxy}"
+: "${BRIDGE_PORT:=8080}"
+: "${BRIDGE_HOST:=0.0.0.0}"
+: "${BRIDGE_CALL_DELAY:=1.5}"
+: "${BRIDGE_VENV:=}"
 
-# Check if virtual environment exists
-if [ ! -d "$VENV_PATH" ]; then
-    echo "❌ Error: Virtual environment not found at $VENV_PATH"
-    echo ""
-    echo "Create it with:"
-    echo "  cd /Users/mdavidson58/Documents/AnyLog/Prove-IT/proxy"
-    echo "  python3 -m venv myenv"
+# ---------------------------------------------------------------------------
+# Activate virtualenv if BRIDGE_VENV is set or a local venv exists
+# ---------------------------------------------------------------------------
+if [[ -n "${BRIDGE_VENV}" && -f "${BRIDGE_VENV}/bin/activate" ]]; then
+    echo "[bridge] Activating venv: ${BRIDGE_VENV}"
+    # shellcheck disable=SC1090
+    source "${BRIDGE_VENV}/bin/activate"
+elif [[ -f "${SCRIPT_DIR}/venv/bin/activate" ]]; then
+    echo "[bridge] Activating local venv: ${SCRIPT_DIR}/venv"
+    # shellcheck disable=SC1090
+    source "${SCRIPT_DIR}/venv/bin/activate"
+fi
+
+# ---------------------------------------------------------------------------
+# Verify python and bridge script exist
+# ---------------------------------------------------------------------------
+if ! command -v python3 &>/dev/null; then
+    echo "[bridge] ERROR: python3 not found in PATH" >&2
     exit 1
 fi
 
-# Check if mcp_proxy exists
-if [ ! -f "$MCP_PROXY" ]; then
-    echo "❌ Error: mcp_proxy not found at $MCP_PROXY"
-    echo ""
-    echo "Install it with:"
-    echo "  source ${VENV_PATH}/bin/activate"
-    echo "  pip install mcp-proxy"
+if [[ ! -f "${BRIDGE_SCRIPT}" ]]; then
+    echo "[bridge] ERROR: bridge script not found: ${BRIDGE_SCRIPT}" >&2
     exit 1
 fi
 
-# Check if bridge script exists
-if [ ! -f "$BRIDGE_SCRIPT" ]; then
-    echo "❌ Error: Bridge script not found: $BRIDGE_SCRIPT"
-    echo ""
-    echo "Make sure mcp_web_bridge.py is in the current directory"
-    exit 1
-fi
+# ---------------------------------------------------------------------------
+# Build default CLI args from env vars.
+# Any explicit CLI args passed to this script OVERRIDE the env defaults.
+# ---------------------------------------------------------------------------
+DEFAULT_ARGS=(
+    "--mcp-url"    "${BRIDGE_MCP_URL}"
+    "--mcp-proxy"  "${BRIDGE_MCP_PROXY}"
+    "--port"       "${BRIDGE_PORT}"
+    "--host"       "${BRIDGE_HOST}"
+    "--call-delay" "${BRIDGE_CALL_DELAY}"
+)
 
-# Activate virtual environment
-echo "📦 Activating virtual environment..."
-source "${VENV_PATH}/bin/activate"
+# ---------------------------------------------------------------------------
+# Parse CLI args to detect overrides so we don't double-pass
+# Already-specified flags in $@ take precedence — we filter duplicates.
+# ---------------------------------------------------------------------------
+PASSTHROUGH=("$@")
 
-# Check if Flask is installed
-if ! python3 -c "import flask" 2>/dev/null; then
-    echo "⚠️  Flask not installed. Installing dependencies..."
-    pip install -q flask flask-cors
-    echo "✅ Dependencies installed"
-fi
+has_flag() {
+    local flag="$1"
+    for arg in "${PASSTHROUGH[@]}"; do
+        [[ "$arg" == "$flag" ]] && return 0
+    done
+    return 1
+}
 
-echo ""
-echo "Configuration:"
-echo "  • MCP Proxy: $MCP_PROXY"
-echo "  • AnyLog Server: http://50.116.13.109:32049/mcp/sse"
-echo "  • Bridge Port: $PORT"
-echo ""
-
-# Check if port is already in use
-if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
-    echo "⚠️  Warning: Port $PORT is already in use"
-    echo ""
-    read -p "Kill existing process and continue? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        PID=$(lsof -ti:$PORT)
-        kill -9 $PID 2>/dev/null || true
-        sleep 1
-        echo "✅ Killed process $PID"
-    else
-        echo "Exiting..."
-        exit 1
+FINAL_ARGS=()
+# Add defaults only if the caller didn't already supply the flag
+i=0
+while [[ $i -lt ${#DEFAULT_ARGS[@]} ]]; do
+    flag="${DEFAULT_ARGS[$i]}"
+    val="${DEFAULT_ARGS[$((i+1))]}"
+    if ! has_flag "${flag}"; then
+        FINAL_ARGS+=("${flag}" "${val}")
     fi
-fi
+    i=$((i+2))
+done
 
-echo "🚀 Starting MCP Web Bridge..."
-echo ""
-echo "═══════════════════════════════════════════════════════════"
-echo "  Dashboard URL: http://localhost:$PORT"
-echo "  Press Ctrl+C to stop"
-echo "═══════════════════════════════════════════════════════════"
+# Append everything the caller passed
+FINAL_ARGS+=("${PASSTHROUGH[@]}")
+
+# ---------------------------------------------------------------------------
+# Print banner
+# ---------------------------------------------------------------------------
+echo "============================================================"
+echo " MCP Web Bridge v4.0"
+echo "============================================================"
+
+# Show effective values
+mcp_url="${BRIDGE_MCP_URL}"
+port="${BRIDGE_PORT}"
+for (( i=0; i<${#FINAL_ARGS[@]}-1; i++ )); do
+    case "${FINAL_ARGS[$i]}" in
+        --mcp-url) mcp_url="${FINAL_ARGS[$((i+1))]}" ;;
+        --port)    port="${FINAL_ARGS[$((i+1))]}" ;;
+    esac
+done
+
+echo " MCP URL : ${mcp_url}"
+echo " Port    : ${port}"
+echo " Script  : ${BRIDGE_SCRIPT}"
+echo "============================================================"
 echo ""
 
-# Start the bridge
-python3 "$BRIDGE_SCRIPT"
+# ---------------------------------------------------------------------------
+# Launch
+# ---------------------------------------------------------------------------
+exec python3 "${BRIDGE_SCRIPT}" "${FINAL_ARGS[@]}"
