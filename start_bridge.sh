@@ -152,6 +152,10 @@ echo " Script  : ${BRIDGE_SCRIPT}"
 echo "============================================================"
 echo ""
 
+# Install Python deps
+echo "[mcp_web_proxxy] Installing Python dependencies..."
+pip install -r requirements.txt --quiet
+
 # ---------------------------------------------------------------------------
 # Launch
 # ---------------------------------------------------------------------------
