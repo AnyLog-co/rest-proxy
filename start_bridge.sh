@@ -54,7 +54,7 @@ BRIDGE_SCRIPT="${SCRIPT_DIR}/mcp_web_bridge.py"
 # ---------------------------------------------------------------------------
 # Defaults (can be overridden by env vars)
 # ---------------------------------------------------------------------------
-: "${BRIDGE_MCP_URL:=https://172.79.89.206:32049/mcp/sse}"
+: "${BRIDGE_MCP_URL:=http://50.116.13.109:32049/mcp/sse}"
 : "${BRIDGE_MCP_PROXY:=/Users/mdavidson58/Documents/AnyLog/Prove-IT/venv/bin/mcp-proxy}"
 : "${BRIDGE_PORT:=8080}"
 : "${BRIDGE_HOST:=0.0.0.0}"
@@ -103,11 +103,11 @@ DEFAULT_ARGS=(
 # Parse CLI args to detect overrides so we don't double-pass
 # Already-specified flags in $@ take precedence — we filter duplicates.
 # ---------------------------------------------------------------------------
-PASSTHROUGH=("$@")
+PASSTHROUGH=("${@:+$@}")
 
 has_flag() {
     local flag="$1"
-    for arg in "${PASSTHROUGH[@]}"; do
+    for arg in "${PASSTHROUGH[@]:+${PASSTHROUGH[@]}}"; do
         [[ "$arg" == "$flag" ]] && return 0
     done
     return 1
@@ -125,8 +125,9 @@ while [[ $i -lt ${#DEFAULT_ARGS[@]} ]]; do
     i=$((i+2))
 done
 
-# Append everything the caller passed
-FINAL_ARGS+=("${PASSTHROUGH[@]}")
+# FIX 3: guard the append with a length check so set -u never sees an
+# expansion of an empty array.
+[[ ${#PASSTHROUGH[@]} -gt 0 ]] && FINAL_ARGS+=("${PASSTHROUGH[@]}")
 
 # ---------------------------------------------------------------------------
 # Print banner
