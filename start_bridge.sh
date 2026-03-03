@@ -153,8 +153,8 @@ echo "============================================================"
 echo ""
 
 # Install Python deps
-echo "[mcp_web_proxxy] Installing Python dependencies..."
-pip install -r requirements.txt --quiet
+echo "[mcp_web_proxy] Installing Python dependencies..."
+pip install -r requirements.txt 
 
 # ---------------------------------------------------------------------------
 # Launch
