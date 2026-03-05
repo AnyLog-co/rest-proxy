@@ -1,6 +1,6 @@
 # MCP Web Bridge
 
-**Version 4.0** | Python 3.9+ | Flask · flask-cors
+**Version 4.1** | Python 3.9+ | Flask · flask-cors
 
 Bridges HTTP REST requests from browser dashboards to the AnyLog MCP SSE
 protocol.  A single long-lived `mcp-proxy` subprocess handles the MCP
@@ -23,6 +23,8 @@ client side.
 - [Caching](#caching)
 - [Calling from JavaScript](#calling-from-javascript)
 - [Running multiple connectors](#running-multiple-connectors)
+- [HTTPS / TLS](#https--tls)
+- [Logging](#logging)
 - [Troubleshooting](#troubleshooting)
 - [Version history](#version-history)
 
@@ -83,6 +85,7 @@ Key design rules:
 | AnyLog MCP SSE server | Running and reachable, e.g. `https://172.79.89.206:32049/mcp/sse` |
 | `flask` | `pip install flask` |
 | `flask-cors` | `pip install flask-cors` |
+| `cryptography` _(optional)_ | `pip install cryptography` — only needed for `--ssl` auto-cert generation when the `openssl` CLI is unavailable |
 
 ---
 
@@ -95,7 +98,11 @@ source /path/to/venv/bin/activate
 # 2. Install Python dependencies
 pip install flask flask-cors
 
-# 3. Make start_bridge.sh executable
+# 3a. (Optional) Install cryptography for --ssl auto-cert generation
+#     Skip if your system already has the openssl CLI (macOS / most Linux distros)
+pip install cryptography
+
+# 3b. Make start_bridge.sh executable
 chmod +x start_bridge.sh
 ```
 
@@ -113,10 +120,21 @@ chmod +x start_bridge.sh
 # Test it
 curl http://localhost:8080/api/status
 curl http://localhost:8080/api/uns/databases
+
+# HTTPS with auto-generated self-signed certificate
+./start_bridge.sh --mcp-url https://50.116.13.109:32049/mcp/sse --ssl
+curl -k https://localhost:8080/api/status
+
+# Quiet mode — warnings and errors only (no per-request log lines)
+./start_bridge.sh --mcp-url https://172.79.89.206:32049/mcp/sse --quiet
+
+# Log everything to a file as well as stderr
+./start_bridge.sh --mcp-url https://172.79.89.206:32049/mcp/sse --log-file bridge.log
 ```
 
 The bridge starts, spawns `mcp-proxy`, performs the MCP initialise handshake,
-and then listens on `http://0.0.0.0:8080` (or your chosen port).
+and then listens on `http://0.0.0.0:8080` (or your chosen port).  When `--ssl`
+is active, the scheme changes to `https://`.
 
 ---
 
@@ -130,15 +148,26 @@ python3 mcp_web_bridge.py [OPTIONS]
 |---|---|---|
 | `--mcp-url URL` | `https://172.79.89.206:32049/mcp/sse` | MCP SSE server to connect to |
 | `--mcp-proxy PATH` | `…/venv/bin/mcp-proxy` | Path to the `mcp-proxy` binary |
-| `--port INT` | `8080` | HTTP port to listen on |
+| `--port INT` | `8080` | HTTP/HTTPS port to listen on |
 | `--host ADDR` | `0.0.0.0` | Interface to bind to |
 | `--call-delay FLOAT` | `1.5` | Seconds between MCP calls |
-| `--debug` | off | Enable Flask debug mode + verbose logging |
+| `--debug` | off | Enable Flask debug mode + verbose logging (overrides `--quiet`) |
+| `--quiet`, `-q` | off | Suppress INFO log chatter; show warnings and errors only |
+| `--log-file PATH` | _(none)_ | Append all log output to this file **in addition to** stderr |
+| `--ssl` | off | Serve the Flask frontend over HTTPS |
+| `--ssl-cert CERT.pem` | _(auto)_ | Path to an existing PEM certificate (implies `--ssl`) |
+| `--ssl-key KEY.pem` | _(auto)_ | Path to an existing PEM private key (implies `--ssl`) |
 | `-h, --help` | | Show help and exit |
 
 **`--mcp-url`** is the key argument.  It selects which AnyLog network the
 bridge talks to.  Every endpoint response includes the active `mcp_url` so
 dashboards can confirm they are hitting the right connector.
+
+**Logging options** (`--quiet`, `--debug`, `--log-file`) are independent and
+composable.  `--debug` overrides `--quiet` when both are given.  `--log-file`
+always appends (never truncates) and writes the same lines that go to stderr.
+
+**TLS options** — see [HTTPS / TLS](#https--tls) for full details.
 
 ---
 
@@ -181,6 +210,20 @@ BRIDGE_VENV=/home/mark/anylog/venv ./start_bridge.sh \
 
 # Debug mode
 ./start_bridge.sh --mcp-url https://... --debug
+
+# Quiet logging — warnings and errors only
+./start_bridge.sh --mcp-url https://... --quiet
+
+# Log to file and suppress console chatter
+./start_bridge.sh --mcp-url https://... --quiet --log-file /var/log/bridge.log
+
+# HTTPS with auto-generated self-signed certificate
+./start_bridge.sh --mcp-url https://... --ssl
+
+# HTTPS with your own certificate
+./start_bridge.sh --mcp-url https://... \
+  --ssl-cert /etc/ssl/bridge.crt \
+  --ssl-key  /etc/ssl/bridge.key
 ```
 
 ---
@@ -578,6 +621,83 @@ instance is running there.
 
 ---
 
+## HTTPS / TLS
+
+The bridge can serve its HTTP frontend over TLS so that dashboards hosted on
+`https://` pages can call it without mixed-content browser errors.
+
+> **Note:** TLS here applies only to the **browser ↔ bridge** leg.  The
+> **bridge ↔ AnyLog MCP SSE** leg is always HTTPS via `mcp-proxy` and is
+> unaffected by these options.
+
+### Quickstart — self-signed certificate
+
+```bash
+# Auto-generates mcp_bridge_cert.pem + mcp_bridge_key.pem in the working directory
+python3 mcp_web_bridge.py --mcp-url https://... --ssl
+
+# Then test (skip cert verification for self-signed)
+curl -k https://localhost:8080/api/status
+```
+
+The certificate is generated once and reused on subsequent starts.  It is
+valid for 365 days.  Generation uses the `openssl` CLI if available, otherwise
+falls back to the `cryptography` package.
+
+### Using an existing certificate
+
+Supply paths to your own PEM files (e.g. from Let's Encrypt or an internal CA):
+
+```bash
+python3 mcp_web_bridge.py --mcp-url https://... \
+  --ssl-cert /etc/ssl/certs/bridge.crt \
+  --ssl-key  /etc/ssl/private/bridge.key
+```
+
+Providing `--ssl-cert` or `--ssl-key` automatically enables TLS — you do not
+need `--ssl` as well.
+
+### Certificate trust
+
+| Scenario | Action |
+|---|---|
+| Self-signed, development | Use `curl -k` or accept the browser security exception once |
+| Self-signed, shared team | Import `mcp_bridge_cert.pem` into your OS / browser trust store |
+| CA-signed (Let's Encrypt) | Browsers trust automatically; no exceptions needed |
+
+### Dashboard `fetch` URL
+
+When the bridge is running over HTTPS, update dashboard base URLs:
+
+```javascript
+const BRIDGE = 'https://localhost:8080';   // was http://
+const status = await fetch(`${BRIDGE}/api/status`).then(r => r.json());
+```
+
+---
+
+## Logging
+
+| Flag | Log level | Use case |
+|---|---|---|
+| _(default)_ | `INFO` | Normal operation — one line per HTTP request and MCP call |
+| `--quiet` / `-q` | `WARNING` | Production / low-noise — warnings and errors only |
+| `--debug` | `DEBUG` | Diagnosis — full JSON-RPC traffic, overrides `--quiet` |
+
+`--log-file PATH` appends all log output to the named file **in addition to**
+stderr.  The file is opened in UTF-8 append mode, so restarts accumulate rather
+than overwrite.
+
+```bash
+# Minimal console noise, full log preserved on disk
+python3 mcp_web_bridge.py --mcp-url https://... --quiet --log-file bridge.log
+
+# Debug everything, also save to file
+python3 mcp_web_bridge.py --mcp-url https://... --debug --log-file debug.log
+```
+
+---
+
 ## Troubleshooting
 
 **Bridge starts but `/api/status` returns 503**
@@ -613,12 +733,43 @@ The worker detects a dead process (`poll() is not None`) and automatically
 respawns it on the next call.  Check `stderr` output for error details.
 Use `--debug` to see full JSON-RPC traffic.
 
+**Browser shows "mixed content" error when calling the bridge**
+
+Your dashboard is served over `https://` but the bridge is running on plain
+`http://`.  Enable TLS on the bridge:
+```bash
+./start_bridge.sh --mcp-url https://... --ssl
+```
+Then update the dashboard base URL to `https://localhost:<port>`.
+
+**`--ssl` fails: "Cannot generate a self-signed certificate"**
+
+Neither the `openssl` CLI nor the `cryptography` package was found.
+```bash
+pip install cryptography
+```
+Or generate a cert manually and supply the paths:
+```bash
+openssl req -x509 -newkey rsa:2048 -keyout bridge.key -out bridge.crt -days 365 -nodes -subj "/CN=mcp-web-bridge"
+./start_bridge.sh --ssl-cert bridge.crt --ssl-key bridge.key ...
+```
+
+**Log file is not being written**
+
+Verify the path is writable by the user running the bridge.  The bridge logs
+an error to stderr and continues without file logging if the file cannot be
+opened.  Use an absolute path to avoid working-directory surprises:
+```bash
+./start_bridge.sh --log-file /var/log/mcp_bridge.log ...
+```
+
 ---
 
 ## Version history
 
 | Version | Date | Changes |
 |---|---|---|
+| **4.1** | 2026-03-05 | `--quiet` / `-q` flag (WARNING-level logging); `--log-file` (append log to file); `--ssl` / `--ssl-cert` / `--ssl-key` (HTTPS frontend with auto self-signed cert generation via `openssl` CLI or `cryptography` package) |
 | **4.0** | 2026-02-23 | `--mcp-url` CLI arg; UNS-aware `/api/uns/databases` endpoint; `--mcp-proxy`, `--port`, `--host`, `--call-delay`, `--debug` args; `start_bridge.sh` env-var + CLI merge; runtime `CFG` dict replaces hardcoded constants |
 | 3.0 | 2026-02-18 | Single-worker job queue; TTL cache; duplicate-request dedup; `/api/uns/policies`, `/api/cache/clear`, `/api/worker/status` endpoints; fixed concurrent-request MCP corruption |
 | 2.0 | 2026-02-13 | Per-request `_pending` dict routing; `call_lock` serialisation; fixed MCP response parsing (`content[0].text`) |

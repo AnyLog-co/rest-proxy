@@ -29,14 +29,16 @@ Metadata cached for CACHE_TTL_S; sensor/query data for DATA_TTL_S.
 import argparse
 import json
 import logging
+import os
 import queue
+import ssl
 import subprocess
 import sys
 import threading
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -58,12 +60,116 @@ DATA_TTL_S    = 30    # 30 s  — query results
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    stream=sys.stderr,
-)
+LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+
+# Root logger configured later in main() once CLI args are parsed.
+# A minimal stderr handler is set here so any import-time messages are visible.
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, stream=sys.stderr)
 log = logging.getLogger("mcp_bridge")
+
+
+def _configure_logging(quiet: bool, log_file: Optional[str], debug: bool) -> None:
+    """
+    Reconfigure the root logger after CLI args are parsed.
+
+    quiet=True  → WARNING level  (errors/warnings only, no per-request chatter)
+    debug=True  → DEBUG level    (overrides quiet)
+    log_file    → also write to the given file path (appends, UTF-8)
+    """
+    level = logging.DEBUG if debug else (logging.WARNING if quiet else logging.INFO)
+
+    root = logging.getLogger()
+    root.setLevel(level)
+
+    formatter = logging.Formatter(LOG_FORMAT)
+
+    # Replace any existing handlers on the root logger
+    root.handlers.clear()
+
+    stderr_handler = logging.StreamHandler(sys.stderr)
+    stderr_handler.setFormatter(formatter)
+    root.addHandler(stderr_handler)
+
+    if log_file:
+        try:
+            file_handler = logging.FileHandler(log_file, encoding="utf-8")
+            file_handler.setFormatter(formatter)
+            root.addHandler(file_handler)
+            log.info("Logging to file: %s", log_file)
+        except OSError as exc:
+            log.error("Cannot open log file %r: %s — file logging disabled", log_file, exc)
+
+
+def _make_self_signed_cert(cert_path: str, key_path: str) -> None:
+    """
+    Generate a self-signed TLS certificate + private key.
+    Uses the openssl CLI if available, otherwise falls back to the
+    cryptography package (pip install cryptography).
+    Called automatically when --ssl is given without --ssl-cert/--ssl-key.
+    """
+    import shutil
+    if shutil.which("openssl"):
+        cmd = [
+            "openssl", "req", "-x509", "-newkey", "rsa:2048",
+            "-keyout", key_path,
+            "-out",    cert_path,
+            "-days",   "365",
+            "-nodes",
+            "-subj",   "/CN=mcp-web-bridge",
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            log.info("Self-signed cert generated via openssl: %s / %s", cert_path, key_path)
+            return
+        log.warning("openssl failed (%s); trying cryptography package", result.stderr.strip())
+
+    # Fallback: cryptography package
+    try:
+        from cryptography import x509
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        from cryptography.x509.oid import NameOID
+        import datetime
+
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        subject = issuer = x509.Name([
+            x509.NameAttribute(NameOID.COMMON_NAME, u"mcp-web-bridge"),
+        ])
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(subject)
+            .issuer_name(issuer)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(datetime.datetime.utcnow())
+            .not_valid_after(datetime.datetime.utcnow() + datetime.timedelta(days=365))
+            .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+            .sign(key, hashes.SHA256())
+        )
+        with open(key_path, "wb") as f:
+            f.write(key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.NoEncryption(),
+            ))
+        with open(cert_path, "wb") as f:
+            f.write(cert.public_bytes(serialization.Encoding.PEM))
+        log.info("Self-signed cert generated via cryptography: %s / %s", cert_path, key_path)
+    except ImportError:
+        raise RuntimeError(
+            "Cannot generate a self-signed certificate: neither 'openssl' CLI nor "
+            "the 'cryptography' package is available.\n"
+            "Install with:  pip install cryptography\n"
+            "or supply --ssl-cert / --ssl-key paths to an existing certificate."
+        )
+
+
+def _build_ssl_context(cert: str, key: str) -> ssl.SSLContext:
+    """Return an SSLContext suitable for Flask/Werkzeug."""
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.load_cert_chain(certfile=cert, keyfile=key)
+    return ctx
+
 
 # ---------------------------------------------------------------------------
 # Runtime config (populated in main() from parsed args)
@@ -659,10 +765,50 @@ def main() -> None:
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="Enable Flask debug mode and verbose logging",
+        help="Enable Flask debug mode and verbose logging (overrides --quiet)",
+    )
+    parser.add_argument(
+        "--quiet", "-q",
+        action="store_true",
+        help="Suppress INFO-level log chatter; show only warnings and errors",
+    )
+    parser.add_argument(
+        "--log-file",
+        default=None,
+        metavar="PATH",
+        help="Append log output to this file in addition to stderr (e.g. bridge.log)",
+    )
+
+    # ── TLS / HTTPS ──────────────────────────────────────────────────────────
+    ssl_group = parser.add_argument_group(
+        "TLS / HTTPS",
+        "Serve the bridge over HTTPS instead of plain HTTP.  Use --ssl to "
+        "enable TLS.  Supply --ssl-cert and --ssl-key if you have an existing "
+        "certificate; omit them to auto-generate a self-signed certificate "
+        "(requires openssl CLI or: pip install cryptography).",
+    )
+    ssl_group.add_argument(
+        "--ssl",
+        action="store_true",
+        help="Enable HTTPS on the Flask frontend",
+    )
+    ssl_group.add_argument(
+        "--ssl-cert",
+        default=None,
+        metavar="CERT.pem",
+        help="Path to PEM certificate file (implies --ssl)",
+    )
+    ssl_group.add_argument(
+        "--ssl-key",
+        default=None,
+        metavar="KEY.pem",
+        help="Path to PEM private-key file (implies --ssl)",
     )
 
     args = parser.parse_args()
+
+    # --ssl-cert / --ssl-key imply --ssl
+    use_ssl = args.ssl or bool(args.ssl_cert or args.ssl_key)
 
     # Populate runtime config
     CFG["mcp_url"]    = args.mcp_url
@@ -672,9 +818,34 @@ def main() -> None:
 
     CALL_DELAY_S = args.call_delay
 
-    if args.debug:
-        log.setLevel(logging.DEBUG)
-        logging.getLogger().setLevel(logging.DEBUG)
+    # Apply logging configuration (quiet / debug / log-file)
+    _configure_logging(quiet=args.quiet, log_file=args.log_file, debug=args.debug)
+
+    # ── Resolve TLS certificate ───────────────────────────────────────────────
+    ssl_context = None
+    if use_ssl:
+        cert_path = args.ssl_cert or "mcp_bridge_cert.pem"
+        key_path  = args.ssl_key  or "mcp_bridge_key.pem"
+
+        if not (os.path.exists(cert_path) and os.path.exists(key_path)):
+            if args.ssl_cert or args.ssl_key:
+                # User supplied explicit paths that don't exist — hard error
+                missing = [p for p in (cert_path, key_path) if not os.path.exists(p)]
+                log.error("SSL file(s) not found: %s", missing)
+                sys.exit(1)
+            # Auto-generate self-signed cert
+            log.info("Generating self-signed certificate ...")
+            try:
+                _make_self_signed_cert(cert_path, key_path)
+            except RuntimeError as exc:
+                log.error("%s", exc)
+                sys.exit(1)
+
+        ssl_context = _build_ssl_context(cert_path, key_path)
+        log.info("TLS enabled: cert=%s  key=%s", cert_path, key_path)
+
+    scheme = "https" if use_ssl else "http"
+    log_level_label = "DEBUG" if args.debug else ("WARNING (quiet)" if args.quiet else "INFO")
 
     print("=" * 65, file=sys.stderr)
     print("MCP Web Bridge  v4.0  (single-worker, all MCP calls serialised)",
@@ -682,15 +853,26 @@ def main() -> None:
     print("=" * 65, file=sys.stderr)
     print(f"  MCP URL   : {CFG['mcp_url']}",  file=sys.stderr)
     print(f"  MCP Proxy : {CFG['mcp_proxy']}", file=sys.stderr)
-    print(f"  Listen    : http://{CFG['host']}:{CFG['port']}", file=sys.stderr)
+    print(f"  Listen    : {scheme}://{CFG['host']}:{CFG['port']}", file=sys.stderr)
+    if use_ssl:
+        print(f"  TLS cert  : {cert_path}", file=sys.stderr)
+        print(f"  TLS key   : {key_path}",  file=sys.stderr)
     print(f"  Call delay: {CALL_DELAY_S}s between MCP calls", file=sys.stderr)
     print(f"  Job timeout: {JOB_TIMEOUT_S}s per HTTP request", file=sys.stderr)
+    print(f"  Log level : {log_level_label}", file=sys.stderr)
+    if args.log_file:
+        print(f"  Log file  : {args.log_file}", file=sys.stderr)
     print("=" * 65, file=sys.stderr)
     print(file=sys.stderr)
 
     start_worker()
-    app.run(host=CFG["host"], port=CFG["port"],
-            debug=args.debug, threaded=True)
+    app.run(
+        host=CFG["host"],
+        port=CFG["port"],
+        debug=args.debug,
+        threaded=True,
+        ssl_context=ssl_context,   # None → plain HTTP; SSLContext → HTTPS
+    )
 
 
 if __name__ == "__main__":

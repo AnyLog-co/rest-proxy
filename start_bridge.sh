@@ -55,7 +55,7 @@ BRIDGE_SCRIPT="${SCRIPT_DIR}/mcp_web_bridge.py"
 # Defaults (can be overridden by env vars)
 # ---------------------------------------------------------------------------
 : "${BRIDGE_MCP_URL:=http://50.116.13.109:32049/mcp/sse}"
-: "${BRIDGE_MCP_PROXY:=/Users/mdavidson58/Documents/AnyLog/Prove-IT/venv/bin/mcp-proxy}"
+: "${BRIDGE_MCP_PROXY:=./venv/bin/mcp-proxy}"
 : "${BRIDGE_PORT:=8080}"
 : "${BRIDGE_HOST:=0.0.0.0}"
 : "${BRIDGE_CALL_DELAY:=1.5}"
